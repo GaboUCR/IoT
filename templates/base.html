@@ -24,9 +24,9 @@
     {% block content %}{% endblock %}
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>  
+  <script src="{% static 'vendor/chart.js' %}"></script>
+  <script src="{% static 'vendor/luxon.js' %}"></script>
+  <script src="{% static 'vendor/chartjs-adapter-luxon.js' %}"></script>  
   <script type="module" src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
