@@ -1,20 +1,20 @@
-<!-- templates/sensores/dashboard.html -->
+<!-- templates/sensors/dashboard.html -->
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
-
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <!-- Valor numérico -->
-  <div class="bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-2">Temperatura Actual</h2>
-    <p id="valor-temperatura" class="text-5xl font-bold text-blue-600">-- °C</p>
-  </div>
+<div class="space-y-6">
+  <div class="sensor-component bg-white shadow rounded p-4" data-sensor-id="temp01">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold">Sensor de Temperatura</h2>
+      <button class="toggle-mode px-4 py-1 bg-blue-500 text-white rounded text-sm">
+        Ver gráfico
+      </button>
+    </div>
 
-  <!-- Gráfico -->
-  <div class="bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-2">Histórico de Temperatura</h2>
-    <canvas id="grafico-temperatura" height="200"></canvas>
+    <!-- Contenido dinámico (se alterna según modo) -->
+    <div class="sensor-body">
+      <!-- Se inyectará por JS -->
+    </div>
   </div>
 </div>
 {% endblock %}
