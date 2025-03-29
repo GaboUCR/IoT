@@ -1,20 +1,22 @@
 <!-- templates/sensors/dashboard.html -->
 {% extends "base.html" %}
 
-{% block content %}
-<div class="space-y-6">
-  <div class="sensor-component bg-white shadow rounded p-4" data-sensor-id="temp01">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">Sensor de Temperatura</h2>
-      <button class="toggle-mode px-4 py-1 bg-blue-500 text-white rounded text-sm">
-        Ver gráfico
-      </button>
-    </div>
+{% block title %}Dashboard{% endblock %}
 
-    <!-- Contenido dinámico (se alterna según modo) -->
-    <div class="sensor-body">
-      <!-- Se inyectará por JS -->
+{% block content %}
+<div class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4"
+     style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+  <!-- Se renderizan los componentes aquí -->
+  {% for sensor in sensors %}
+    <div class="sensor-component bg-white shadow rounded p-4" data-sensor-id="{{ sensor.id }}">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">{{ sensor.nombre }}</h2>
+        <button class="toggle-mode px-4 py-1 bg-blue-500 text-white rounded text-sm">
+          Ver gráfico
+        </button>
+      </div>
+      <div class="sensor-body"></div>
     </div>
-  </div>
+  {% endfor %}
 </div>
 {% endblock %}

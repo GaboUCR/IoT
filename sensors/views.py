@@ -1,4 +1,18 @@
-from django.shortcuts import render
+# sensors/views/dashboard.py
+
+from django.shortcuts import render #TODO:research module utility
 
 def dashboard(request):
-    return render(request, "sensors/dashboard.html")
+    # Simulación de sensores disponibles
+    sensores = [
+        {"id": "temp01", "nombre": "Sensor de Temperatura"},
+        {"id": "hum01", "nombre": "Sensor de Humedad"},
+        {"id": "volt01", "nombre": "Sensor de Voltaje"},
+        {"id": "pres01", "nombre": "Sensor de Presión"},
+        {"id": "lux01", "nombre": "Sensor de Luminosidad"},
+        {"id": "ph01", "nombre": "Sensor de pH"},
+        {"id": "co201", "nombre": "Sensor de CO₂"},
+        {"id": "gas01", "nombre": "Sensor de Gas"},
+        {"id": "prox01", "nombre": "Sensor de Proximidad"},
+    ]
+    return render(request, "sensors/dashboard.html", {"sensors": sensores})
