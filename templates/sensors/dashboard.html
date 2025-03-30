@@ -1,5 +1,6 @@
 <!-- templates/sensors/dashboard.html -->
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Dashboard{% endblock %}
 
@@ -9,16 +10,22 @@
   <!-- Se renderizan los componentes aquí -->
   {% for sensor in sensors %}
     <div class="sensor-component bg-white shadow rounded p-4" data-sensor-id="{{ sensor.id }}">
+      
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-semibold">{{ sensor.nombre }}</h2>
-        <button class="toggle-mode px-4 py-1 bg-blue-500 text-white rounded text-sm">
-          Ver gráfico
-        </button>
-        <!--TODO: fix rendering size and change character for an image-->
-        <button class="fullscreen-btn px-4 py-1 bg-gray-200 text-sm rounded">
-          🔍
-        </button>
+        <div class="flex gap-2">
+          <button class="toggle-mode px-3 py-1 text-sm bg-blue-500 text-white rounded">
+            Ver gráfico
+          </button>
+          
+          <button class="fullscreen-btn w-8 px-0 py-1 flex items-center justify-center bg-gray-200 rounded">
+            <img src="{% static 'img/fullscreen-icon.png' %}" alt="Fullscreen" class="h-4 w-4">
+          </button>
+            
+        </div>
       </div>
+      
+
       <div class="sensor-body"></div>
     </div>
   {% endfor %}
