@@ -23,11 +23,22 @@ export class SensorChartComponent {
   
     toggleMode() {
       this.mode = this.mode === "realtime" ? "historical" : "realtime";
-      this.btnToggle.textContent =
-        this.mode === "realtime" ? "Ver gráfico" : "Ver tiempo real";
+    
+      const icon = this.btnToggle.querySelector("img.icon-toggle");
+    
+      if (this.mode === "realtime") {
+        icon.src = "/static/img/graph.png";        // cambiar al ícono de gráfico
+        icon.alt = "Gráfico";
+        this.btnToggle.title = "Ver gráfico";
+      } else {
+        icon.src = "/static/img/live.png";         // cambiar al ícono de live
+        icon.alt = "Tiempo real";
+        this.btnToggle.title = "Ver tiempo real";
+      }
+    
       this.render();
     }
-  
+    
     render() {
       this.body.innerHTML = "";
       if (this.mode === "realtime") {

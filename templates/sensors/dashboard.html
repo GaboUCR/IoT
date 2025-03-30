@@ -14,9 +14,10 @@
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-semibold">{{ sensor.nombre }}</h2>
         <div class="flex gap-2">
-          <button class="toggle-mode px-3 py-1 text-sm bg-blue-500 text-white rounded">
-            Ver gráfico
+          <button class="toggle-mode h-8 w-8 flex items-center justify-center bg-blue-500 rounded" title="Ver gráfico">
+            <img src="{% static 'img/graph.png' %}" alt="Gráfico" class="h-4 w-4 icon-toggle">
           </button>
+          
           
           <button class="fullscreen-btn w-8 px-0 py-1 flex items-center justify-center bg-gray-200 rounded">
             <img src="{% static 'img/fullscreen-icon.png' %}" alt="Fullscreen" class="h-4 w-4">
