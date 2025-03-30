@@ -15,10 +15,16 @@
 <body class="bg-gray-100 text-gray-800">
 
   <header class="bg-white shadow p-4 mb-6">
-    <div class="container mx-auto">
+    <div class="container mx-auto flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Plataforma IoT UCR</h1>
+  
+      <!-- Botón con imagen -->
+      <button id="open-form-modal" class="w-8 h-8 flex items-center justify-center">
+        <img src="{% static 'img/add.png' %}" alt="Agregar" class="h-6 w-6" title="Agregar sensor">
+      </button>
     </div>
   </header>
+  
 
   <main class="container mx-auto px-4">
     {% block content %}{% endblock %}
@@ -28,9 +34,38 @@
   class="fixed inset-0 z-50 bg-white p-4 overflow-auto hidden">
   </div>
 
+  <!-- Modal para formulario -->
+  <div id="form-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+      <!-- Botón cerrar -->
+      <button id="close-form-modal" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
+
+      <!-- Contenido del formulario -->
+      <h2 class="text-xl font-semibold mb-4">Registrar nuevo sensor</h2>
+      <form id="sensor-form">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Nombre</label>
+          <input type="text" name="nombre" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" required>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Tipo de dato</label>
+          <input type="text" name="tipo" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" required>
+        </div>
+
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          Enviar
+        </button>
+      </form>
+    </div>
+  </div>
+    
+
   <script src="{% static 'vendor/chart.js' %}"></script>
   <script src="{% static 'vendor/luxon.js' %}"></script>
   <script src="{% static 'vendor/chartjs-adapter-luxon.js' %}"></script>  
   <script type="module" src="{% static 'js/main.js' %}"></script>
+
 </body>
 </html>
