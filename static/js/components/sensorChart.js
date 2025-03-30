@@ -130,25 +130,30 @@ export class SensorChartComponent {
       const container = document.getElementById("fullscreen-container");
       container.innerHTML = ""; // limpiar anteriores
     
-      // Crear wrapper para el componente fullscreen
+      // Crear wrapper centrado para el componente
       const wrapper = document.createElement("div");
       wrapper.className = "max-w-5xl mx-auto";
-    
-      // Clonar el nodo original del componente
+
+      // Clonar componente
       const cloned = this.root.cloneNode(true);
       cloned.classList.add("bg-white", "rounded", "shadow", "p-4");
-    
-      // Cambiar el botón toggle fullscreen dentro del clon a "cerrar"
+
+      // Crear botón de cerrar flotante global
       const closeBtn = document.createElement("button");
       closeBtn.textContent = "Cerrar";
-      closeBtn.className = "exit-fullscreen absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded";
-      closeBtn.addEventListener("click", () => this.exitFullscreen());
-    
+      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
+      closeBtn.innerHTML = `
+        <button class="bg-red-500 text-white px-4 py-2 rounded shadow">
+          Cerrar
+        </button>
+      `;      closeBtn.addEventListener("click", () => this.exitFullscreen());
+
       // Append
-      wrapper.appendChild(closeBtn);
       wrapper.appendChild(cloned);
+      // container.innerHTML = ""; // Limpia
+      container.appendChild(closeBtn);  
       container.appendChild(wrapper);
-    
+
       // Mostrar overlay
       container.classList.remove("hidden");
       document.body.classList.add("overflow-hidden");
