@@ -14,5 +14,9 @@ def dashboard(request):
         {"id": "co201", "nombre": "Sensor de CO₂"},
         {"id": "gas01", "nombre": "Sensor de Gas"},
         {"id": "prox01", "nombre": "Sensor de Proximidad"},
+        {"id": "t1", "nombre": "planta1"},
+        {"id": "t12", "nombre": "planta 1"},
+        {"id": "t32", "nombre": "pla"},
+        {"id": "t36", "nombre": "Tarjeta de Lectura de Sensor Ambiental con Visualización y Acciones"},
     ]
     return render(request, "sensors/dashboard.html", {"sensors": sensores})

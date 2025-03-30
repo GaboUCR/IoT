@@ -51,7 +51,7 @@ export class SensorChartComponent {
     renderRealtime() {
       const valor = document.createElement("p");
       valor.id = `valor-${this.sensorId}`;
-      valor.className = "text-4xl font-bold text-blue-600";
+      valor.className = "text-4xl font-bold text-blue-600 text-center";
       valor.textContent = "-- °C";
   
       this.body.appendChild(valor);

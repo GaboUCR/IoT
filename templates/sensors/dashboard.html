@@ -11,22 +11,28 @@
   {% for sensor in sensors %}
     <div class="sensor-component bg-white shadow rounded p-4" data-sensor-id="{{ sensor.id }}">
       
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold">{{ sensor.nombre }}</h2>
-        <div class="flex gap-2">
-          <button class="toggle-mode h-8 w-8 flex items-center justify-center bg-blue-500 rounded" title="Ver gráfico">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+        <!-- Título centrado -->
+        <div class="w-full sm:w-auto text-center">
+          <h2 class="text-xl font-semibold leading-snug break-words">
+            {{ sensor.nombre }}
+          </h2>
+        </div>
+      
+        <!-- Botones -->
+        <div class="flex gap-2 self-center sm:self-auto">
+          <button class="toggle-mode w-8 h-8 flex items-center justify-center bg-blue-500 rounded" title="Ver gráfico">
             <img src="{% static 'img/graph.png' %}" alt="Gráfico" class="h-4 w-4 icon-toggle">
           </button>
-          
-          
-          <button class="fullscreen-btn w-8 px-0 py-1 flex items-center justify-center bg-gray-200 rounded">
+          <button class="fullscreen-btn w-8 h-8 flex items-center justify-center bg-gray-200 rounded" title="Pantalla completa">
             <img src="{% static 'img/fullscreen-icon.png' %}" alt="Fullscreen" class="h-4 w-4">
           </button>
-            
         </div>
       </div>
       
-
+      
+      
+    
       <div class="sensor-body"></div>
     </div>
   {% endfor %}
