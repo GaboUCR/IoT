@@ -23,6 +23,10 @@
   <main class="container mx-auto px-4">
     {% block content %}{% endblock %}
   </main>
+  <!-- Contenedor oculto para modo fullscreen -->
+  <div id="fullscreen-container"
+  class="fixed inset-0 z-50 bg-white p-4 overflow-auto hidden">
+  </div>
 
   <script src="{% static 'vendor/chart.js' %}"></script>
   <script src="{% static 'vendor/luxon.js' %}"></script>

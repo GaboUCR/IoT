@@ -8,6 +8,9 @@ export class SensorChartComponent {
   
       this.btnToggle = this.root.querySelector(".toggle-mode");
       this.body = this.root.querySelector(".sensor-body");
+      this.fullscreenBtn = this.root.querySelector(".fullscreen-btn");
+      this.fullscreenBtn.addEventListener("click", () => this.expandToFullscreen());
+      
   
       this.chart = null; // instancia Chart.js
       this.init();
@@ -112,6 +115,43 @@ export class SensorChartComponent {
       return { group, input };
     }
 
+    expandToFullscreen() {
+      const container = document.getElementById("fullscreen-container");
+      container.innerHTML = ""; // limpiar anteriores
+    
+      // Crear wrapper para el componente fullscreen
+      const wrapper = document.createElement("div");
+      wrapper.className = "max-w-5xl mx-auto";
+    
+      // Clonar el nodo original del componente
+      const cloned = this.root.cloneNode(true);
+      cloned.classList.add("bg-white", "rounded", "shadow", "p-4");
+    
+      // Cambiar el botón toggle fullscreen dentro del clon a "cerrar"
+      const closeBtn = document.createElement("button");
+      closeBtn.textContent = "Cerrar";
+      closeBtn.className = "exit-fullscreen absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded";
+      closeBtn.addEventListener("click", () => this.exitFullscreen());
+    
+      // Append
+      wrapper.appendChild(closeBtn);
+      wrapper.appendChild(cloned);
+      container.appendChild(wrapper);
+    
+      // Mostrar overlay
+      container.classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+    
+      // Inicializar funcionalidad JS en el nuevo clon
+      new SensorChartComponent(cloned);  // crear nueva instancia sobre el clon
+    }
+
+    exitFullscreen() {
+      const container = document.getElementById("fullscreen-container");
+      container.classList.add("hidden");
+      container.innerHTML = "";
+      document.body.classList.remove("overflow-hidden");
+    }
     
     renderChart(canvas, fromISO, toISO) {
       const fromDate = new Date(fromISO);
