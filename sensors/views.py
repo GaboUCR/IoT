@@ -20,8 +20,8 @@ def dashboard(request):
         {"id": "t36", "nombre": "Tarjeta de Lectura de Sensor Ambiental con Visualización y Acciones"},
     ]
     actuators = [
-        {"id": "light01", "nombre": "Luz Principal", "tipo": "binary"},
-        {"id": "ac01",    "nombre": "Aire Acondicionado", "tipo": "text"},
-        {"id": "door01",  "nombre": "Puerta Principal",   "tipo": "binary"},
+        {"id": "light01", "nombre": "Luz Principal", "tipo": "binario"},
+        {"id": "ac01",    "nombre": "Aire Acondicionado", "tipo": "texto"},
+        {"id": "door01",  "nombre": "Puerta Principal",   "tipo": "binario"},
     ]
     return render(request, "sensors/dashboard.html", {"sensors": sensors, "actuators": actuators})
