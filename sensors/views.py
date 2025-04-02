@@ -4,7 +4,7 @@ from django.shortcuts import render #TODO:research module utility
 
 def dashboard(request):
     # Simulación de sensores disponibles
-    sensores = [
+    sensors = [
         {"id": "temp01", "nombre": "Sensor de Temperatura"},
         {"id": "hum01", "nombre": "Sensor de Humedad"},
         {"id": "volt01", "nombre": "Sensor de Voltaje"},
@@ -19,4 +19,9 @@ def dashboard(request):
         {"id": "t32", "nombre": "pla"},
         {"id": "t36", "nombre": "Tarjeta de Lectura de Sensor Ambiental con Visualización y Acciones"},
     ]
-    return render(request, "sensors/dashboard.html", {"sensors": sensores})
+    actuators = [
+        {"id": "light01", "nombre": "Luz Principal", "tipo": "binary"},
+        {"id": "ac01",    "nombre": "Aire Acondicionado", "tipo": "text"},
+        {"id": "door01",  "nombre": "Puerta Principal",   "tipo": "binary"},
+    ]
+    return render(request, "sensors/dashboard.html", {"sensors": sensors, "actuators": actuators})
