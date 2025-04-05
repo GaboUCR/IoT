@@ -14,3 +14,8 @@
 
 - Los usuarios se suscriben a actualizaciones en tiempo real a través de WebSocket.  
 - Cuando el servidor envía nuevos mensajes MQTT, la interfaz de usuario se actualiza instantáneamente.
+
+
+```bash
+    python3 manage.py runserver --settings=iot_ucr.settings.dev
+```

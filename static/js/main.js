@@ -5,17 +5,38 @@ import { FormModal } from "./components/formModal.js";
 import { ActuatorComponent } from "./components/actuatorComponent.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Inicializar cada sensor (si quieres mantenerlos)
-  document.querySelectorAll(".sensor-component").forEach((el) => {
+  // Inicialización de sensores
+  document.querySelectorAll(".sensor-component").forEach(el => {
     new SensorChartComponent(el);
   });
 
-  // Inicializar actuadores
-  document.querySelectorAll(".actuator-component").forEach((el) => {
-    console.log("Inicializando componente actuador:", el);
+  // Inicialización de actuadores
+  document.querySelectorAll(".actuator-component").forEach(el => {
     new ActuatorComponent(el);
   });
 
-  // Inicializar modal
+  // Inicialización del formulario modal
   new FormModal();
+
+  // Lógica de toggle pub/sub
+  const toggleBtn = document.getElementById("toggle-pub-sub");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const img = toggleBtn.querySelector("img.icon-toggle");
+      if (img.alt === "pub") {
+        // Actualmente en modo "pub", cambiar a "sub"
+        img.src = `${window.STATIC_URL}img/sub.png`;
+        img.alt = "sub";
+        img.title = "Cambiar a Pub";
+        // Aquí podrías ocultar actuadores y mostrar sensors, etc.
+        console.log("Cambiado a SUB");
+      } else {
+        // Modo "sub", cambiar a "pub"
+        img.src = `${window.STATIC_URL}img/pub.png`;
+        img.alt = "pub";
+        img.title = "Cambiar a Sub";
+        console.log("Cambiado a PUB");
+      }
+    });
+  }
 });
