@@ -1,8 +1,8 @@
 // static/js/main.js
-
 import { SensorChartComponent } from "./components/sensorChart.js";
 import { FormModal } from "./components/formModal.js";
 import { ActuatorComponent } from "./components/actuatorComponent.js";
+import {toggleDashboardView} from "./components/toggleDashboardView.js"
 
 document.addEventListener("DOMContentLoaded", () => {
   // Inicialización de sensores
@@ -25,17 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const img = toggleBtn.querySelector("img.icon-toggle");
       if (img.alt === "pub") {
         // Actualmente en modo "pub", cambiar a "sub"
-        img.src = `${window.STATIC_URL}img/sub.png`;
+        img.src = `${window.STATIC_URL}img/pub.png`;
         img.alt = "sub";
         img.title = "Cambiar a Pub";
-        // Aquí podrías ocultar actuadores y mostrar sensors, etc.
-        console.log("Cambiado a SUB");
+        toggleDashboardView("sub");
       } else {
         // Modo "sub", cambiar a "pub"
-        img.src = `${window.STATIC_URL}img/pub.png`;
+        img.src = `${window.STATIC_URL}img/sub.png`;
         img.alt = "pub";
         img.title = "Cambiar a Sub";
-        console.log("Cambiado a PUB");
+        toggleDashboardView("pub");
       }
     });
   }
