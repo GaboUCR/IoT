@@ -22,13 +22,6 @@ from accounts.forms import StyledAuthenticationForm
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("sensors.urls")),
-    path("authentication/", include("django.contrib.auth.urls")),
-    path(
-    'accounts/login/',
-    auth_views.LoginView.as_view(
-        template_name='registration/login.html',
-        authentication_form=StyledAuthenticationForm
-    ),
-    name='login'
-    ), 
+    # path("authentication/", include("django.contrib.auth.urls")),
+    path("accounts/", include("accounts.urls")),
 ]

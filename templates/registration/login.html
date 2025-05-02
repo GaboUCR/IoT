@@ -1,6 +1,4 @@
-{# templates/registration/login.html #}
 {% extends "base.html" %}
-{% load static %}
 {% block title %}Iniciar Sesión{% endblock %}
 
 {% block content %}
@@ -9,25 +7,17 @@
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {{ form.non_field_errors }}
-
     <div>
-      <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">
-        Usuario
-      </label>
+      <label for="{{ form.username.id_for_label }}">Usuario</label>
       {{ form.username }}
       {{ form.username.errors }}
     </div>
-
     <div>
-      <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700">
-        Contraseña
-      </label>
+      <label for="{{ form.password.id_for_label }}">Contraseña</label>
       {{ form.password }}
       {{ form.password.errors }}
     </div>
-
-    <button type="submit"
-            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
       Entrar
     </button>
   </form>
