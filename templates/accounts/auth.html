@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-lg">
+  <div class="flex justify-center gap-4 mb-6">
+    <button id="btn-login"
+            class="px-4 py-2 font-semibold rounded-lg focus:outline-none 
+                   bg-blue-600 text-white border border-transparent 
+                   hover:bg-blue-700 transition">
+      Login
+    </button>
+    <button id="btn-signup"
+            class="px-4 py-2 font-semibold rounded-lg focus:outline-none 
+                   bg-gray-200 text-gray-700 border border-gray-300 
+                   hover:bg-gray-300 transition">
+      Registro
+    </button>
+  </div>
+
+  {# LOGIN FORM #}
+  <div id="form-login" class="space-y-4">
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      {{ form_login.non_field_errors }}
+      <div>
+        {{ form_login.username.label_tag }}
+        {{ form_login.username }}
+        {{ form_login.username.errors }}
+      </div>
+      <div>
+        {{ form_login.password.label_tag }}
+        {{ form_login.password }}
+        {{ form_login.password.errors }}
+      </div>
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 my-4 rounded-lg 
+                     hover:bg-blue-700 transition">
+        Entrar
+      </button>
+    </form>
+  </div>
+
+  {# SIGNUP FORM #}
+  <div id="form-signup" class="hidden space-y-4">
+    <form method="post" action="{% url 'signup' %}">
+      {% csrf_token %}
+      {{ form_signup.non_field_errors }}
+      <div>
+        {{ form_signup.username.label_tag }}
+        {{ form_signup.username }}
+        {{ form_signup.username.errors }}
+      </div>
+      <div>
+        {{ form_signup.email.label_tag }}
+        {{ form_signup.email }}
+        {{ form_signup.email.errors }}
+      </div>
+      <div>
+        {{ form_signup.password1.label_tag }}
+        {{ form_signup.password1 }}
+        {{ form_signup.password1.errors }}
+      </div>
+      <div>
+        {{ form_signup.password2.label_tag }}
+        {{ form_signup.password2 }}
+        {{ form_signup.password2.errors }}
+      </div>
+      <div>
+        {{ form_signup.license.label_tag }}
+        {{ form_signup.license }}
+        {{ form_signup.license.errors }}
+      </div>
+      <button type="submit"
+              class="w-full bg-green-600 text-white py-2 my-4 rounded-lg 
+                     hover:bg-green-700 transition">
+        Registrarme
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Toggle sin frameworks
+document.addEventListener("DOMContentLoaded", () => {
+  const btnL = document.getElementById("btn-login"),
+        btnS = document.getElementById("btn-signup"),
+        fL   = document.getElementById("form-login"),
+        fS   = document.getElementById("form-signup");
+
+  function activateLogin() {
+    // Formularios
+    fL.classList.remove("hidden");
+    fS.classList.add("hidden");
+    // Botones: Login activo / Signup inactivo
+    btnL.classList.replace("bg-gray-200","bg-blue-600");
+    btnL.classList.replace("text-gray-700","text-white");
+    btnL.classList.replace("border-gray-300","border-transparent");
+    btnS.classList.replace("bg-green-600","bg-gray-200");
+    btnS.classList.replace("text-white","text-gray-700");
+    btnS.classList.replace("border-transparent","border-gray-300");
+  }
+
+  function activateSignup() {
+    fS.classList.remove("hidden");
+    fL.classList.add("hidden");
+    btnS.classList.replace("bg-gray-200","bg-green-600");
+    btnS.classList.replace("text-gray-700","text-white");
+    btnS.classList.replace("border-gray-300","border-transparent");
+    btnL.classList.replace("bg-blue-600","bg-gray-200");
+    btnL.classList.replace("text-white","text-gray-700");
+    btnL.classList.replace("border-transparent","border-gray-300");
+  }
+
+  btnL.addEventListener("click", activateLogin);
+  btnS.addEventListener("click", activateSignup);
+
+  // Modo por defecto
+  activateLogin();
+});
+</script>
+{% endblock %}

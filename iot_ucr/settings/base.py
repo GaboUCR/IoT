@@ -40,10 +40,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# URL a la que redirigir cuando se requiera login
-LOGIN_URL = 'login'
-# URL a la que redirigir tras hacer login con éxito
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL          = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL= "/login/"
 
 # Duración de la cookie de sesión (en segundos)
 SESSION_COOKIE_AGE = 1209600  
