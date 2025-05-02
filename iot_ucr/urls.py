@@ -16,8 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from accounts.forms import StyledAuthenticationForm
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("sensors.urls")),  # ← aquí conectamos las URLs de la app sensores
+    path("", include("sensors.urls")),
+    path("authentication/", include("django.contrib.auth.urls")),
+    path(
+    'accounts/login/',
+    auth_views.LoginView.as_view(
+        template_name='registration/login.html',
+        authentication_form=StyledAuthenticationForm
+    ),
+    name='login'
+    ), 
 ]

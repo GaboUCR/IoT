@@ -1,0 +1,21 @@
+[
+    {
+      "model": "sensors.sensor",
+      "pk": 1,
+      "fields": {
+        "name": "Temperatura_Lab1",
+        "sensor_type": "temperatura",
+        "unit": "°C"
+      }
+    },
+    {
+      "model": "sensors.sensor",
+      "pk": 2,
+      "fields": {
+        "name": "Humedad_PlantaA",
+        "sensor_type": "humedad",
+        "unit": "%"
+      }
+    }
+  ]
+  

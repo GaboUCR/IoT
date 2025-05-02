@@ -40,6 +40,17 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# URL a la que redirigir cuando se requiera login
+LOGIN_URL = 'login'
+# URL a la que redirigir tras hacer login con éxito
+LOGIN_REDIRECT_URL = '/'
+
+# Duración de la cookie de sesión (en segundos)
+SESSION_COOKIE_AGE = 1209600  
+# No expirar la sesión al cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -50,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sensors.apps.SensorsConfig',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +79,7 @@ ROOT_URLCONF = 'iot_ucr.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ BASE_DIR / 'templates' ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

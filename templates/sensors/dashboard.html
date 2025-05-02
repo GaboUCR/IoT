@@ -4,9 +4,38 @@
 
 {% block title %}Dashboard{% endblock %}
 
+
+{% block header %}
+  <header class="bg-white shadow p-4 mb-6">
+    <div class="container mx-auto flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">Plataforma IoT UCR</h1>
+
+      <!-- Contenedor de botones del header -->
+      <div class="flex items-center gap-4">
+        
+        <!-- Botón para formulario "Agregar sensor" -->
+        <button id="open-form-modal" class="w-8 h-8 flex items-center justify-center">
+          <img src="{% static 'img/add.png' %}" alt="Agregar" class="h-6 w-6" title="Agregar sensor">
+        </button>
+        
+        <!-- Botón para alternar pub/sub -->
+        <button id="toggle-pub-sub" class="w-8 h-8 flex items-center justify-center">
+          <!-- Imagen inicial (por ejemplo sub.png) -->
+          <img id="pub-sub-icon"
+              src="{% static 'img/pub.png' %}"
+              alt="sub"
+              class="h-6 w-6  icon-toggle"
+              title="Cambiar modo pub/sub">
+        </button>
+
+      </div>
+    </div>
+  </header>
+{% endblock %}
+
+
 {% block content %}
 
-  
   <div id="sensor-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4"
       style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
 
@@ -36,27 +65,27 @@
   </div>
  
 
-<div id="actuator-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4 hidden"
-style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-<!-- Se renderizan los componentes aquí -->
-{% for actuator in actuators %}
-  <div class="actuator-component bg-white shadow rounded p-4"
-       data-actuator-id="{{ actuator.id }}"
-       data-actuator-type="{{ actuator.tipo }}">
-       
-    <!-- Contenedor de título y cuerpo centrado -->
-    <div class="flex flex-col items-center justify-center gap-4 min-h-[100px]">
-      
-      <!-- Título centrado -->
-      <h2 class="text-xl font-semibold text-center leading-snug break-words">
-        {{ actuator.nombre }}
-      </h2>
+  <div id="actuator-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4 hidden"
+  style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+  <!-- Se renderizan los componentes aquí -->
+  {% for actuator in actuators %}
+    <div class="actuator-component bg-white shadow rounded p-4"
+        data-actuator-id="{{ actuator.id }}"
+        data-actuator-type="{{ actuator.tipo }}">
+        
+      <!-- Contenedor de título y cuerpo centrado -->
+      <div class="flex flex-col items-center justify-center gap-4 min-h-[100px]">
+        
+        <!-- Título centrado -->
+        <h2 class="text-xl font-semibold text-center leading-snug break-words">
+          {{ actuator.nombre }}
+        </h2>
 
-      <!-- El cuerpo del componente lo llena JS -->
-      <div class="actuator-body w-full"></div>
+        <!-- El cuerpo del componente lo llena JS -->
+        <div class="actuator-body w-full"></div>
+      </div>
+
     </div>
-
+  {% endfor %}
   </div>
-{% endfor %}
-</div>
 {% endblock %}
