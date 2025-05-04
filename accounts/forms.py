@@ -16,8 +16,6 @@ class StyledAuthenticationForm(AuthenticationForm):
             "class": common,
             "placeholder": "Contraseña"
         })
-
-
 class SignUpForm(UserCreationForm):
     license = forms.CharField(
         max_length=64,
@@ -40,13 +38,24 @@ class SignUpForm(UserCreationForm):
             "email": "Correo electrónico",
             "password1": "Contraseña",
             "password2": "Confirmar contraseña",
+            "license": "Código de licencia",
         }
         for name, field in self.fields.items():
-            # Asignar clases comunes
             field.widget.attrs.update({
                 "class": common_classes,
                 "placeholder": placeholders.get(name, "")
             })
-            # Quitar el help_text de password si no quieres mostrarlo
             if name.startswith("password"):
                 field.help_text = None
+
+    def save(self, commit=True):
+        # 1) Crea el User
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+            # 2) La señal post_save ya habrá creado el Profile vacío,
+            #    ahora lo actualizamos con la license
+            user.profile.license = self.cleaned_data["license"]
+            user.profile.save()
+        return user

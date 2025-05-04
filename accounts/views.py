@@ -1,33 +1,40 @@
 # accounts/views.py
-
-from django.shortcuts   import redirect
-from django.urls        import reverse_lazy
-from django.views       import View
-from django.views.generic import TemplateView, FormView
+from django.shortcuts       import redirect
+from django.urls            import reverse_lazy
+from django.views           import View
+from django.views.generic   import FormView
+from django.contrib.auth    import login
 from django.contrib.auth.views import LoginView, LogoutView
-from .forms              import StyledAuthenticationForm, SignUpForm
+from .forms                 import StyledAuthenticationForm, SignUpForm
 
 class HomeView(View):
     """
-    Raíz de la app: si estoy autenticado voy al dashboard,
-    si no, a la pantalla de login/signup.
+    /
+    Si el usuario ya está logueado → dashboard,
+    si no, → /login/
     """
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("dashboard")
         return redirect("login")
 
+
 class CustomLoginView(LoginView):
-    template_name = "accounts/auth.html"
-    authentication_form = StyledAuthenticationForm
+    """
+    /login/
+    Usa StyledAuthenticationForm y envía también un SignUpForm vacío
+    para que auth.html pueda renderizar ambos formularios.
+    """
+    template_name         = "accounts/auth.html"
+    authentication_form   = StyledAuthenticationForm
+    redirect_authenticated_user = True  # evita volver al login si ya está dentro
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # ctx['form'] ya es tu login form, así que lo alias:
-        ctx["form_login"]  = ctx.get("form")
-        # añadimos el signup vacío
-        ctx["form_signup"] = SignUpForm()
+        ctx["form_login"]  = ctx.pop("form")                   # el form de LoginView
+        ctx["form_signup"] = SignUpForm()                      # uno vacío para el signup
         return ctx
+
 
 class SignUpView(FormView):
     template_name = "accounts/auth.html"
@@ -35,14 +42,23 @@ class SignUpView(FormView):
     success_url   = reverse_lazy("dashboard")
 
     def form_valid(self, form):
-        # crea user + profile
-        form.save()
+        user = form.save()
+        login(self.request, user)
         return super().form_valid(form)
     
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form_login"] = StyledAuthenticationForm()
+        ctx["form_signup"] = ctx.pop("form")
+        ctx["form_login"]  = StyledAuthenticationForm()
         return ctx
 
+
 class CustomLogoutView(LogoutView):
+    """
+    /logout/
+    Solo cierra sesión y redirige al login.
+    """
     next_page = reverse_lazy("login")
