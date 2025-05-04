@@ -28,6 +28,10 @@ environ.Env.read_env(BASE_DIR / '.env')
 # Secret key
 SECRET_KEY = env("SECRET_KEY")
 
+# License
+SIGNUP_LICENSE = os.environ.get("SIGNUP_LICENSE", "")
+
+
 # Debug
 DEBUG = env("DEBUG")
 

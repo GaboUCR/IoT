@@ -2,6 +2,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 class StyledAuthenticationForm(AuthenticationForm):
@@ -16,6 +18,8 @@ class StyledAuthenticationForm(AuthenticationForm):
             "class": common,
             "placeholder": "Contraseña"
         })
+
+
 class SignUpForm(UserCreationForm):
     license = forms.CharField(
         max_length=64,
@@ -59,3 +63,9 @@ class SignUpForm(UserCreationForm):
             user.profile.license = self.cleaned_data["license"]
             user.profile.save()
         return user
+
+    def clean_license(self):
+        codigo = self.cleaned_data.get("license")
+        if codigo != settings.SIGNUP_LICENSE:
+            raise ValidationError("El código de licencia no es válido.")
+        return codigo
