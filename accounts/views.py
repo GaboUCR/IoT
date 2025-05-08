@@ -31,8 +31,10 @@ class CustomLoginView(LoginView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form_login"]  = ctx.pop("form")                   # el form de LoginView
-        ctx["form_signup"] = SignUpForm()                      # uno vacío para el signup
+        ctx["form_login"]  = ctx.pop("form")
+        ctx["form_signup"] = SignUpForm()
+        ctx.setdefault("active_tab", "login")
+
         return ctx
 
 
@@ -47,14 +49,16 @@ class SignUpView(FormView):
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        return super().form_invalid(form)
+        ctx = self.get_context_data(form=form)
+        ctx["active_tab"] = "signup"
+        return self.render_to_response(ctx)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["form_signup"] = ctx.pop("form")
         ctx["form_login"]  = StyledAuthenticationForm()
+        ctx.setdefault("active_tab", "login")
         return ctx
-
 
 class CustomLogoutView(LogoutView):
     """

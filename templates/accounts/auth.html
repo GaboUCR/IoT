@@ -85,42 +85,46 @@
 </div>
 
 <script>
-// Toggle sin frameworks
-document.addEventListener("DOMContentLoaded", () => {
-  const btnL = document.getElementById("btn-login"),
-        btnS = document.getElementById("btn-signup"),
-        fL   = document.getElementById("form-login"),
-        fS   = document.getElementById("form-signup");
-
-  function activateLogin() {
-    // Formularios
-    fL.classList.remove("hidden");
-    fS.classList.add("hidden");
-    // Botones: Login activo / Signup inactivo
-    btnL.classList.replace("bg-gray-200","bg-blue-600");
-    btnL.classList.replace("text-gray-700","text-white");
-    btnL.classList.replace("border-gray-300","border-transparent");
-    btnS.classList.replace("bg-green-600","bg-gray-200");
-    btnS.classList.replace("text-white","text-gray-700");
-    btnS.classList.replace("border-transparent","border-gray-300");
-  }
-
-  function activateSignup() {
-    fS.classList.remove("hidden");
-    fL.classList.add("hidden");
-    btnS.classList.replace("bg-gray-200","bg-green-600");
-    btnS.classList.replace("text-gray-700","text-white");
-    btnS.classList.replace("border-gray-300","border-transparent");
-    btnL.classList.replace("bg-blue-600","bg-gray-200");
-    btnL.classList.replace("text-white","text-gray-700");
-    btnL.classList.replace("border-transparent","border-gray-300");
-  }
-
-  btnL.addEventListener("click", activateLogin);
-  btnS.addEventListener("click", activateSignup);
-
-  // Modo por defecto
-  activateLogin();
-});
-</script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnL = document.getElementById("btn-login"),
+          btnS = document.getElementById("btn-signup"),
+          fL   = document.getElementById("form-login"),
+          fS   = document.getElementById("form-signup");
+  
+    function activateLogin() {
+      fL.classList.remove("hidden");
+      fS.classList.add("hidden");
+      btnL.classList.replace("bg-gray-200","bg-blue-600");
+      btnL.classList.replace("text-gray-700","text-white");
+      btnL.classList.replace("border-gray-300","border-transparent");
+      btnS.classList.replace("bg-green-600","bg-gray-200");
+      btnS.classList.replace("text-white","text-gray-700");
+      btnS.classList.replace("border-transparent","border-gray-300");
+    }
+  
+    function activateSignup() {
+      fS.classList.remove("hidden");
+      fL.classList.add("hidden");
+      btnS.classList.replace("bg-gray-200","bg-green-600");
+      btnS.classList.replace("text-gray-700","text-white");
+      btnS.classList.replace("border-gray-300","border-transparent");
+      btnL.classList.replace("bg-blue-600","bg-gray-200");
+      btnL.classList.replace("text-white","text-gray-700");
+      btnL.classList.replace("border-transparent","border-gray-300");
+    }
+  
+    // Conectar los botones
+    btnL.addEventListener("click", activateLogin);
+    btnS.addEventListener("click", activateSignup);
+  
+    // Arrancar en la pestaña que venga en el contexto
+    const active = "{{ active_tab|default:'login' }}";
+    if (active === "signup") {
+      activateSignup();
+    } else {
+      activateLogin();
+    }
+  });
+  </script>
+  
 {% endblock %}
