@@ -28,6 +28,19 @@
               title="Cambiar modo pub/sub">
         </button>
 
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button id="logout-button" class="w-8 h-8 flex items-center justify-center">
+  
+            <img id="logout-icon"
+                src="{% static 'img/logout.png' %}"
+                alt="sub"
+                class="h-6 w-6  icon-toggle"
+                title="button to logout">
+          </button>
+        </form>
+        
+
       </div>
     </div>
   </header>
