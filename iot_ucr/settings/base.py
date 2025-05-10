@@ -28,6 +28,10 @@ environ.Env.read_env(BASE_DIR / '.env')
 # Secret key
 SECRET_KEY = env("SECRET_KEY")
 
+# License
+SIGNUP_LICENSE = os.environ.get("SIGNUP_LICENSE", "")
+
+
 # Debug
 DEBUG = env("DEBUG")
 
@@ -40,6 +44,16 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+LOGIN_URL          = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL= "/login/"
+
+# Duración de la cookie de sesión (en segundos)
+SESSION_COOKIE_AGE = 1209600  
+# No expirar la sesión al cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,6 +63,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sensors.apps.SensorsConfig',
+    # 'accounts',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -66,7 +83,7 @@ ROOT_URLCONF = 'iot_ucr.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ BASE_DIR / 'templates' ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

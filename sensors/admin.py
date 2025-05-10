@@ -1,3 +1,15 @@
+# sensors/admin.py
 from django.contrib import admin
+from .models import Sensor, SensorReading
 
-# Register your models here.
+@admin.register(Sensor)
+class SensorAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "sensor_type", "unit")
+    search_fields = ("name", "sensor_type")
+
+@admin.register(SensorReading)
+class SensorReadingAdmin(admin.ModelAdmin):
+    list_display = ("sensor", "value", "timestamp")
+    list_filter = ("sensor",)
+    search_fields = ("sensor__name",)
+    date_hierarchy = "timestamp"

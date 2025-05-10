@@ -1,3 +1,25 @@
 from django.db import models
 
-# Create your models here.
+class Sensor(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    sensor_type = models.CharField(max_length=32)
+    unit = models.CharField(max_length=8)
+
+    def __str__(self):
+        return f"{self.name} ({self.sensor_type})"
+
+
+class SensorReading(models.Model):
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, related_name='readings')
+    value = models.FloatField()
+    timestamp = models.DateTimeField(db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+            models.Index(fields=["sensor"]),
+        ]
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.sensor.name}: {self.value} @ {self.timestamp}"
