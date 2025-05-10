@@ -23,3 +23,15 @@ class SensorReading(models.Model):
 
     def __str__(self):
         return f"{self.sensor.name}: {self.value} @ {self.timestamp}"
+
+class Actuator(models.Model):
+    ACTUATOR_TYPE_CHOICES = [
+        ("binario", "Binario"),
+        ("texto", "Texto"),
+    ]
+
+    name = models.CharField(max_length=64, unique=True)
+    actuator_type = models.CharField(max_length=16, choices=ACTUATOR_TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.name} ({self.actuator_type})"

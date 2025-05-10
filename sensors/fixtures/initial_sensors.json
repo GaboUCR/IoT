@@ -1,21 +1,92 @@
 [
-    {
-      "model": "sensors.sensor",
-      "pk": 1,
-      "fields": {
-        "name": "Temperatura_Lab1",
-        "sensor_type": "temperatura",
-        "unit": "°C"
-      }
-    },
-    {
-      "model": "sensors.sensor",
-      "pk": 2,
-      "fields": {
-        "name": "Humedad_PlantaA",
-        "sensor_type": "humedad",
-        "unit": "%"
-      }
+  {
+    "model": "sensors.sensor",
+    "pk": 1,
+    "fields": {
+      "name": "Sensor de Temperatura",
+      "sensor_type": "temperatura",
+      "unit": "°C"
     }
-  ]
-  
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 2,
+    "fields": {
+      "name": "Sensor de Humedad",
+      "sensor_type": "humedad",
+      "unit": "%"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 3,
+    "fields": {
+      "name": "Sensor de Voltaje",
+      "sensor_type": "voltaje",
+      "unit": "V"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 4,
+    "fields": {
+      "name": "Sensor de Presión",
+      "sensor_type": "presion",
+      "unit": "Pa"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 5,
+    "fields": {
+      "name": "Sensor de Luminosidad",
+      "sensor_type": "luminosidad",
+      "unit": "lx"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 6,
+    "fields": {
+      "name": "Sensor de pH",
+      "sensor_type": "ph",
+      "unit": "pH"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 7,
+    "fields": {
+      "name": "Sensor de CO₂",
+      "sensor_type": "co2",
+      "unit": "ppm"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 8,
+    "fields": {
+      "name": "Sensor de Gas",
+      "sensor_type": "gas",
+      "unit": "ppm"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 9,
+    "fields": {
+      "name": "Sensor de Proximidad",
+      "sensor_type": "proximidad",
+      "unit": "cm"
+    }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 10,
+    "fields": {
+      "name": "Tarjeta de Lectura de Sensor Ambiental",
+      "sensor_type": "ambiente",
+      "unit": "°C"
+    }
+  }
+]
