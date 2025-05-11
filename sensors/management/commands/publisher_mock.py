@@ -1,9 +1,12 @@
-
 import time
 import random
 import json
 import paho.mqtt.client as mqtt
 from datetime import datetime
+import pytz  
+
+# Zona horaria de Costa Rica
+tz = pytz.timezone('America/Costa_Rica')
 
 # Lista de sensores simulados
 SENSORS = [
@@ -38,7 +41,6 @@ client = mqtt.Client()
 client.connect("localhost", 1883, 60)
 
 def simulate_sensor_value(sensor_type):
-    # Rangos simulados por tipo
     ranges = {
         "temperatura": (20, 30),
         "humedad": (30, 80),
@@ -58,12 +60,13 @@ while True:
     for sensor_type, sensor_name in SENSORS:
         topic = f"sensors/{sensor_type}/{sensor_name.replace(' ', '_')}"
         value = simulate_sensor_value(sensor_type)
+        now_cr = datetime.now(tz)  # 👈 timestamp con hora local
         payload = {
             "value": value,
             "unit": UNITS[sensor_type],
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": now_cr.isoformat()
         }
         client.publish(topic, json.dumps(payload))
         print(f"[MQTT] Sent to {topic}: {payload}")
 
-    time.sleep(2)  # Espera entre publicaciones
+    time.sleep(2)
