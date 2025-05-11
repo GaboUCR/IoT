@@ -61,7 +61,9 @@
               {{ sensor.nombre }}
             </h2>
           </div>
-        
+          <p class="text-lg font-medium mt-2 last-value">{{ last_reading.value }}</p>
+          <p class="text-xs text-gray-400 timestamp">({{ last_reading.timestamp|date:"H:i:s" }})</p>
+          
           <div class="flex gap-2 self-center sm:self-auto">
             <button class="toggle-mode w-8 h-8 flex items-center justify-center bg-blue-500 rounded" title="Ver gráfico">
               <img src="{% static 'img/graph.png' %}" alt="Gráfico" class="h-4 w-4 icon-toggle">
@@ -101,4 +103,32 @@
     </div>
   {% endfor %}
   </div>
+
+  <script>
+    (() => {
+      const protocol = location.protocol === "https:" ? "wss" : "ws";
+      const socket = new WebSocket(`${protocol}://${location.host}/ws/sensors/`);
+    
+      socket.onmessage = ({ data }) => {
+        const { sensor_id, value, timestamp } = JSON.parse(data);
+
+        console.log(data)
+        const sel = document.querySelector(`#sensor-${sensor_id} .last-value`);
+        const timeEl = document.querySelector(`#sensor-${sensor_id} .timestamp`);
+        if (sel) {
+          sel.textContent = `${value}`;
+          timeEl.textContent = new Date(timestamp).toLocaleTimeString();
+        }
+      };
+    
+      socket.onclose = () => {
+        console.log("WS desconectado: reintentando en 3s");
+        setTimeout(() => window.location.reload(), 3000);
+      };
+    })();
+    </script>
+
 {% endblock %}
+
+
+  
