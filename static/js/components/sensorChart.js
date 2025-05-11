@@ -11,7 +11,6 @@ export class SensorChartComponent {
       this.fullscreenBtn = this.root.querySelector(".fullscreen-btn");
       this.fullscreenBtn.addEventListener("click", () => this.expandToFullscreen());
       
-  
       this.chart = null; // instancia Chart.js
       this.init();
     }
@@ -27,11 +26,11 @@ export class SensorChartComponent {
       const icon = this.btnToggle.querySelector("img.icon-toggle");
     
       if (this.mode === "realtime") {
-        icon.src = "/static/img/graph.png";        // cambiar al ícono de gráfico
+        icon.src = "/static/img/graph.png";
         icon.alt = "Gráfico";
         this.btnToggle.title = "Ver gráfico";
       } else {
-        icon.src = "/static/img/live.png";         // cambiar al ícono de live
+        icon.src = "/static/img/live.png";
         icon.alt = "Tiempo real";
         this.btnToggle.title = "Ver tiempo real";
       }
@@ -41,38 +40,13 @@ export class SensorChartComponent {
     
     render() {
       this.body.innerHTML = "";
-      if (this.mode === "realtime") {
-        this.renderRealtime();
-      } else {
+      if (this.mode === "historical") {
         this.renderHistorical();
       }
+      // En modo realtime no se renderiza gráfico: el componente externo 'RealTimeUpdater' se encarga de actualizar valores.
     }
   
-    renderRealtime() {
-      const valor = document.createElement("p");
-      valor.id = `valor-${this.sensorId}`;
-      valor.className = "text-4xl font-bold text-blue-600 text-center";
-      valor.textContent = "-- °C";
-  
-      this.body.appendChild(valor);
-      this.startRealtimeSimulation(valor);
-    }
-  
-    startRealtimeSimulation(valorEl) {
-      if (this.interval) clearInterval(this.interval);
-  
-      const update = () => {
-        const val = (20 + Math.random() * 10).toFixed(2);
-        valorEl.textContent = `${val} °C`;
-      };
-  
-      update();
-      this.interval = setInterval(update, 2000);
-    }
-
     renderHistorical() {
-      if (this.interval) clearInterval(this.interval);
-  
       const wrapper = document.createElement("div");
   
       // Selectores de fecha/hora
@@ -130,36 +104,29 @@ export class SensorChartComponent {
       const container = document.getElementById("fullscreen-container");
       container.innerHTML = ""; // limpiar anteriores
     
-      // Crear wrapper centrado para el componente
       const wrapper = document.createElement("div");
       wrapper.className = "max-w-5xl mx-auto";
 
-      // Clonar componente
       const cloned = this.root.cloneNode(true);
       cloned.classList.add("bg-white", "rounded", "shadow", "p-4");
 
-      // Crear botón de cerrar flotante global
       const closeBtn = document.createElement("button");
-      closeBtn.textContent = "Cerrar";
-      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
       closeBtn.innerHTML = `
         <button class="bg-red-500 text-white px-4 py-2 rounded shadow">
           Cerrar
         </button>
-      `;      closeBtn.addEventListener("click", () => this.exitFullscreen());
+      `;
+      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
+      closeBtn.addEventListener("click", () => this.exitFullscreen());
 
-      // Append
       wrapper.appendChild(cloned);
-      // container.innerHTML = ""; // Limpia
       container.appendChild(closeBtn);  
       container.appendChild(wrapper);
 
-      // Mostrar overlay
       container.classList.remove("hidden");
       document.body.classList.add("overflow-hidden");
     
-      // Inicializar funcionalidad JS en el nuevo clon
-      new SensorChartComponent(cloned);  // crear nueva instancia sobre el clon
+      new SensorChartComponent(cloned);
     }
 
     exitFullscreen() {
@@ -174,7 +141,6 @@ export class SensorChartComponent {
       const toDate = new Date(toISO);
       const diffMin = (toDate - fromDate) / 1000 / 60;
     
-      // Elegir unidad para eje X según el rango
       let timeUnit = "minute";
       if (diffMin <= 60) timeUnit = "minute";
       else if (diffMin <= 60 * 6) timeUnit = "minute";
@@ -182,7 +148,6 @@ export class SensorChartComponent {
       else if (diffMin <= 60 * 24 * 7) timeUnit = "day";
       else timeUnit = "week";
     
-      // Generar datos simulados entre from y to
       const numPoints = 15;
       const labels = [];
       const values = [];
@@ -190,7 +155,7 @@ export class SensorChartComponent {
     
       for (let i = 0; i < numPoints; i++) {
         const ts = new Date(fromDate.getTime() + i * step);
-        labels.push(ts.toISOString()); // timestamp ISO para eje temporal
+        labels.push(ts.toISOString());
         values.push((20 + Math.random() * 10).toFixed(2));
       }
     
@@ -203,50 +168,16 @@ export class SensorChartComponent {
           datasets: [{
             label: "Temperatura",
             data: labels.map((t, i) => ({ x: t, y: values[i] })),
-            borderColor: "rgb(59, 130, 246)",
-            backgroundColor: "rgba(59, 130, 246, 0.2)",
             tension: 0.3
           }]
         },
         options: {
           responsive: true,
           scales: {
-            x: {
-              type: 'time',
-              time: {
-                unit: timeUnit,
-                tooltipFormat: 'DD T',
-                displayFormats: {
-                  minute: 'HH:mm',
-                  hour: 'HH:mm',
-                  day: 'dd/MM',
-                  week: 'dd/MM',
-                },
-              },
-              title: {
-                display: true,
-                text: 'Tiempo'
-              }
-            },
-            y: {
-              beginAtZero: false,
-              title: {
-                display: true,
-                text: '°C'
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: true
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false
-            }
+            x: { type: 'time', time: { unit: timeUnit } },
+            y: { beginAtZero: false }
           }
         }
       });
     }
   }
-  
