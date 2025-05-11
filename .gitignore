@@ -4,3 +4,4 @@ db.sqlite3
 __pycache__
 todo.txt
 notes
+get_files.py
