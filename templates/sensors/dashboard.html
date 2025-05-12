@@ -104,27 +104,26 @@
   </div>
  
 
-  <div id="actuator-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4 hidden"
-  style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-  <!-- Se renderizan los componentes aquí -->
+<div id="actuator-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4 hidden"
+     style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
   {% for actuator in actuators %}
-    <div class="actuator-component bg-white shadow rounded p-4"
-        data-actuator-id="{{ actuator.id }}"
-        data-actuator-type="{{ actuator.tipo }}">
-        
-      <!-- Contenedor de título y cuerpo centrado -->
-      <div class="flex flex-col items-center justify-center gap-4 min-h-[100px]">
-        
-        <!-- Título centrado -->
-        <h2 class="text-xl font-semibold text-center leading-snug break-words">
-          {{ actuator.nombre }}
-        </h2>
+    <div class="actuator-component bg-white shadow rounded p-4 space-y-6"
+         data-actuator-id="{{ actuator.id }}"
+         data-actuator-type="{{ actuator.actuator_type }}">
 
-        <!-- El cuerpo del componente lo llena JS -->
-        <div class="actuator-body w-full"></div>
+      <!-- Título y tipo -->
+      <div class="flex flex-col items-center justify-center gap-2">
+        <h2 class="text-xl font-semibold text-center leading-snug break-words">
+          {{ actuator.name }}
+        </h2>
+        
       </div>
+
+      <!-- Cuerpo dinámico -->
+      <div class="actuator-body mt-4 w-full"></div>
 
     </div>
   {% endfor %}
-  </div>
+</div>
+
 {% endblock %}

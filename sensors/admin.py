@@ -16,5 +16,5 @@ class SensorReadingAdmin(admin.ModelAdmin):
 
 @admin.register(Actuator)
 class ActuatorAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "actuator_type")
+    list_display = ("id", "name", "actuator_type", "value_boolean", "value_text")
     search_fields = ("name", "actuator_type")
