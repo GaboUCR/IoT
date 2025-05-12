@@ -1,8 +1,4 @@
 export class RealTimeUpdater {
-  /**
-   * @param {string} url      Endpoint que devuelve { sensors: [ {id, name, value, timestamp} ] }
-   * @param {number} interval Intervalo en ms para refrescar (por defecto 3000ms)
-   */
   constructor({ url = "/api/latest-readings/", interval = 3000 } = {}) {
     this.url = url;
     this.interval = interval;
@@ -17,35 +13,52 @@ export class RealTimeUpdater {
         credentials: "same-origin"
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const body = await resp.json();
-      return body.sensors || [];
+      return await resp.json();
     } catch (err) {
       console.error("RealTimeUpdater fetch error:", err);
-      return [];
+      return { sensors: [], actuators: [] };
     }
   }
 
   async update() {
-    const sensors = await this.fetchLatest();
+    const { sensors = [], actuators = [] } = await this.fetchLatest();
 
-    console.log(sensors);
+    // Actualizar sensores
     sensors.forEach(({ id, value, timestamp }) => {
       const container = document.getElementById(`sensor-${id}`);
       if (!container) return;
 
       const valueEl = container.querySelector(".last-value");
-      const tsEl    = container.querySelector(".timestamp");
+      const tsEl = container.querySelector(".timestamp");
+
       if (valueEl) valueEl.textContent = value !== null ? value : "--";
-      if (tsEl)    tsEl.textContent    = timestamp
+      if (tsEl) tsEl.textContent = timestamp
         ? new Date(timestamp).toLocaleTimeString()
         : "";
+    });
+
+    // Actualizar actuadores
+    actuators.forEach(({ id, type, value }) => {
+      if (type === "binario") {
+        const img = document.getElementById(`state-${id}`);
+        if (img) {
+          const src = value
+            ? `${window.STATIC_URL}img/check.png`
+            : `${window.STATIC_URL}img/x.png`;
+          img.src = src;
+        }
+      } else if (type === "texto") {
+        const container = document.querySelector(`.actuator-component[data-actuator-id="${id}"]`);
+        if (!container) return;
+
+        const input = container.querySelector("input[type='text']");
+        if (input) input.placeholder = value || "Enviar comando...";
+      }
     });
   }
 
   start() {
-    // Primera actualización inmediata
     this.update();
-    // Luego cada interval ms
     this.timer = setInterval(() => this.update(), this.interval);
   }
 
