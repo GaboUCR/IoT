@@ -197,44 +197,69 @@ export class SensorChartComponent {
       const fromDate = new Date(fromISO);
       const toDate = new Date(toISO);
       const diffMin = (toDate - fromDate) / 1000 / 60;
-    
+
       let timeUnit = "minute";
       if (diffMin <= 60) timeUnit = "minute";
-      else if (diffMin <= 60 * 6) timeUnit = "minute";
-      else if (diffMin <= 60 * 24) timeUnit = "hour";
-      else if (diffMin <= 60 * 24 * 7) timeUnit = "day";
+      else if (diffMin <= 360) timeUnit = "minute";
+      else if (diffMin <= 1440) timeUnit = "hour";
+      else if (diffMin <= 10080) timeUnit = "day";
       else timeUnit = "week";
-    
-      const numPoints = 15;
-      const labels = [];
-      const values = [];
-      const step = (toDate - fromDate) / numPoints;
-    
-      for (let i = 0; i < numPoints; i++) {
-        const ts = new Date(fromDate.getTime() + i * step);
-        labels.push(ts.toISOString());
-        values.push((20 + Math.random() * 10).toFixed(2));
-      }
-    
-      if (this.chart) this.chart.destroy();
-    
-      this.chart = new Chart(canvas.getContext("2d"), {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "Temperatura",
-            data: labels.map((t, i) => ({ x: t, y: values[i] })),
-            tension: 0.3
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { type: 'time', time: { unit: timeUnit } },
-            y: { beginAtZero: false }
+
+      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.data || data.data.length === 0) {
+            if (this.chart) this.chart.destroy();
+            this.chart = new Chart(canvas.getContext("2d"), {
+              type: "line",
+              data: { labels: [], datasets: [] },
+              options: {
+                plugins: { legend: { display: false } },
+                scales: { x: { type: 'time' }, y: { beginAtZero: true } }
+              }
+            });
+            return;
           }
-        }
-      });
+
+          const labels = data.data.map(d => d.timestamp);
+          const values = data.data.map(d => d.value);
+
+          if (this.chart) this.chart.destroy();
+
+          this.chart = new Chart(canvas.getContext("2d"), {
+            type: "line",
+            data: {
+              labels,
+              datasets: [{
+                label: "Sensor",
+                data: labels.map((x, i) => ({ x, y: values[i] })),
+                borderColor: "rgb(59, 130, 246)",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                tension: 0.3,
+                pointRadius: 3
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                x: {
+                  type: 'time',
+                  time: { unit: timeUnit }
+                },
+                y: { beginAtZero: false }
+              },
+              plugins: {
+                legend: { display: true },
+                tooltip: { intersect: false, mode: 'index' }
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.error("Error cargando datos del sensor:", err);
+        });
     }
+
   }
