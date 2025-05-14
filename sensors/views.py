@@ -7,6 +7,9 @@ from django.http       import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt  
+from django.views.decorators.http import require_GET
+from django.utils.dateparse import parse_datetime
+
 import json
 
 
@@ -66,6 +69,46 @@ def latest_readings(request):
         "sensors":   sensor_data,
         "actuators": actuator_data,
     })
+
+
+@require_GET
+@login_required
+def sensor_readings_range(request):
+    """
+    Retorna lecturas de un sensor específico en un rango de tiempo.
+    Espera parámetros GET:
+    - sensor_id: ID del sensor
+    - from: fecha-hora inicio (ISO 8601)
+    - to: fecha-hora fin (ISO 8601)
+    """
+    sensor_id = request.GET.get("sensor_id")
+    start_str = request.GET.get("from")
+    end_str   = request.GET.get("to")
+
+    if not all([sensor_id, start_str, end_str]):
+        return JsonResponse({"error": "Parámetros incompletos"}, status=400)
+
+    try:
+        start = parse_datetime(start_str)
+        end   = parse_datetime(end_str)
+        sensor = Sensor.objects.get(id=sensor_id)
+
+        readings = sensor.readings.filter(timestamp__range=(start, end)).order_by("timestamp")
+
+        data = [
+            {
+                "timestamp": timezone.localtime(r.timestamp).isoformat(),
+                "value": r.value
+            }
+            for r in readings
+        ]
+        return JsonResponse({"sensor": sensor.name, "unit": sensor.unit, "data": data})
+
+    except Sensor.DoesNotExist:
+        return JsonResponse({"error": "Sensor no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
 
 @csrf_exempt
 @require_POST
