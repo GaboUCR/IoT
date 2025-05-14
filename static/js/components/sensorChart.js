@@ -61,7 +61,47 @@ export class SensorChartComponent {
       btn.textContent = "Actualizar";
       btn.className = "bg-blue-600 text-white px-3 py-1 rounded";
   
-      form.append(from.group, to.group, btn);
+      // 🆕 Botón de descarga
+      const downloadBtn = document.createElement("button");
+      downloadBtn.type = "button";
+      downloadBtn.title = "Descargar";
+      downloadBtn.className = "ml-2";
+      downloadBtn.innerHTML = `
+        <img src="/static/img/download.png" class="w-6 h-6" alt="Descargar">
+      `;
+
+      downloadBtn.addEventListener("click", () => {
+        const fromDate = from.input.value;
+        const toDate = to.input.value;
+        if (!fromDate || !toDate) return;
+
+        const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromDate}&to=${toDate}`;
+        fetch(url)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.data) return;
+
+            const rows = [["timestamp", "value"]];
+            data.data.forEach(d => rows.push([d.timestamp, d.value]));
+
+            const csv = rows.map(r => r.join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `sensor_${this.sensorId}_data.csv`;
+            link.click();
+          });
+      });
+
+      // Grupo para acciones
+      const actions = document.createElement("div");
+      actions.className = "flex items-center gap-2";
+
+      actions.appendChild(btn);
+      actions.appendChild(downloadBtn);
+
+      form.append(from.group, to.group, actions);
+
       wrapper.appendChild(form);
   
       const canvas = document.createElement("canvas");
@@ -69,19 +109,36 @@ export class SensorChartComponent {
       wrapper.appendChild(canvas);
   
       this.body.appendChild(wrapper);
-  
+        
+      this.chart = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            label: "Sin datos",
+            data: [],
+            borderColor: "rgba(0, 0, 0, 0.2)",
+            backgroundColor: "rgba(0, 0, 0, 0.05)",
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { type: 'time' },
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          }
+        }
+      });
+
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         this.renderChart(canvas, from.input.value, to.input.value);
       });
-  
-      // Preload con datos falsos
-      const now = new Date();
-      const before = new Date(now.getTime() - 10 * 60000);
-      from.input.value = before.toISOString().slice(0, 16);
-      to.input.value = now.toISOString().slice(0, 16);
-  
-      this.renderChart(canvas, from.input.value, to.input.value);
+
     }
   
     createDateInput(name, label) {
