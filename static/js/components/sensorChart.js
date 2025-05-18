@@ -205,7 +205,7 @@ export class SensorChartComponent {
       else if (diffMin <= 10080) timeUnit = "day";
       else timeUnit = "week";
 
-      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}`;
+      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}&buckets=50`;
 
       fetch(url)
         .then(res => res.json())

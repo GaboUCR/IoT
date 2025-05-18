@@ -76,14 +76,16 @@ def latest_readings(request):
 def sensor_readings_range(request):
     """
     Retorna lecturas de un sensor específico en un rango de tiempo.
-    Espera parámetros GET:
-    - sensor_id: ID del sensor
-    - from: fecha-hora inicio (ISO 8601)
-    - to: fecha-hora fin (ISO 8601)
+    Parámetros GET:
+      - sensor_id: ID del sensor
+      - from: fecha-hora inicio (ISO 8601)
+      - to: fecha-hora fin (ISO 8601)
+      - buckets (opcional): número máximo de puntos agregados.
     """
     sensor_id = request.GET.get("sensor_id")
     start_str = request.GET.get("from")
     end_str   = request.GET.get("to")
+    buckets   = request.GET.get("buckets")
 
     if not all([sensor_id, start_str, end_str]):
         return JsonResponse({"error": "Parámetros incompletos"}, status=400)
@@ -92,22 +94,54 @@ def sensor_readings_range(request):
         start = parse_datetime(start_str)
         end   = parse_datetime(end_str)
         sensor = Sensor.objects.get(id=sensor_id)
+    except Sensor.DoesNotExist:
+        return JsonResponse({"error": "Sensor no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
-        readings = sensor.readings.filter(timestamp__range=(start, end)).order_by("timestamp")
+    qs = sensor.readings.filter(timestamp__range=(start, end)).order_by("timestamp")
+    total = qs.count()
 
+    # Si no pedimos buckets, devolvemos TODAS las lecturas
+    try:
+        n_buckets = int(buckets) if buckets is not None else 0
+    except ValueError:
+        n_buckets = 0
+
+    if n_buckets and total > n_buckets:
+        # calculamos tamaño de cada “trozo”
+        step = total / n_buckets
+        aggregated = []
+        for i in range(n_buckets):
+            # índices de slice
+            start_idx = int(i * step)
+            end_idx = int((i + 1) * step)
+            chunk = list(qs[start_idx:end_idx])
+            if not chunk:
+                continue
+            # tomo timestamp “central” y valor promedio
+            mid = chunk[len(chunk)//2].timestamp
+            avg = sum(r.value for r in chunk) / len(chunk)
+            aggregated.append({
+                "timestamp": timezone.localtime(mid).isoformat(),
+                "value": round(avg, 2),
+            })
+        data = aggregated
+    else:
+        # fallback: todas las lecturas
         data = [
             {
                 "timestamp": timezone.localtime(r.timestamp).isoformat(),
                 "value": r.value
             }
-            for r in readings
+            for r in qs
         ]
-        return JsonResponse({"sensor": sensor.name, "unit": sensor.unit, "data": data})
 
-    except Sensor.DoesNotExist:
-        return JsonResponse({"error": "Sensor no encontrado"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({
+        "sensor": sensor.name,
+        "unit":   sensor.unit,
+        "data":   data
+    })
 
 
 @csrf_exempt
