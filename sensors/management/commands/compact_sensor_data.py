@@ -7,29 +7,32 @@ from django.utils import timezone
 from sensors.models import Sensor, SensorReading
 
 class Command(BaseCommand):
-    help = "Compacta lecturas anteriores a hace 5 minutos en promedios por minuto."
+    help = "Compacta lecturas de los últimos 10 minutos en promedios por minuto."
 
     def handle(self, *args, **options):
         now    = timezone.now()
-        cutoff = now - timedelta(minutes=5)
+        cutoff = now - timedelta(minutes=10)
 
         for sensor in Sensor.objects.all():
-            # 1) QuerySet de originales e IDs
-            orig_qs = SensorReading.objects.filter(
+            # 1) QuerySet de lecturas entre [cutoff, now]
+            recent_qs = SensorReading.objects.filter(
                 sensor=sensor,
-                timestamp__lt=cutoff
-            )
-            orig_ids = list(orig_qs.values_list('id', flat=True))
-            total    = len(orig_ids)
+                timestamp__gte=cutoff,
+                timestamp__lte=now
+            ).order_by("timestamp")
+
+            recent_ids = list(recent_qs.values_list('id', flat=True))
+            total      = len(recent_ids)
             if total == 0:
                 continue
 
-            self.stdout.write(f"[COMPACT] Sensor {sensor.name}: {total} lecturas < {cutoff.isoformat()}")
+            self.stdout.write(
+                f"[COMPACT] Sensor {sensor.name}: {total} lecturas en los últimos 10 minutos"
+            )
 
-            # 2) Agrupar valores por minuto (usamos los objetos en memoria)
+            # 2) Agrupar valores por minuto
             buckets = defaultdict(list)
-            orig_readings = SensorReading.objects.filter(id__in=orig_ids)
-            for r in orig_readings:
+            for r in recent_qs:
                 minute_ts = r.timestamp.replace(second=0, microsecond=0)
                 buckets[minute_ts].append(r.value)
 
@@ -44,8 +47,10 @@ class Command(BaseCommand):
                 )
                 created += 1
 
-            # 4) Borrar **solo** las originales
-            deleted, _ = SensorReading.objects.filter(id__in=orig_ids).delete()
-            self.stdout.write(f"  → Eliminadas {deleted} originales, creadas {created} promedios")
+            # 4) Borrar solo las originales de este período
+            deleted, _ = SensorReading.objects.filter(id__in=recent_ids).delete()
+            self.stdout.write(
+                f"  → Eliminadas {deleted} originales, creadas {created} promedios"
+            )
 
-        self.stdout.write(self.style.SUCCESS("Compactación por minuto completada."))
+        self.stdout.write(self.style.SUCCESS("Compactación de últimos 10 minutos completada."))

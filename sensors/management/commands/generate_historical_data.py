@@ -35,7 +35,7 @@ class Command(BaseCommand):
             return
 
         now   = timezone.now()
-        start = (now - timedelta(days=10)).replace(second=0, microsecond=0)
+        start = (now - timedelta(days=3)).replace(second=0, microsecond=0)
 
         total_inserted = 0
         current = start

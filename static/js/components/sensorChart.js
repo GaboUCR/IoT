@@ -1,7 +1,7 @@
 // static/js/components/sensorChart.js
 
 export class SensorChartComponent {
-    constructor(root) {
+    constructor(root) {this.body
       this.root = root;
       this.sensorId = root.dataset.sensorId;
       this.mode = "realtime";
@@ -60,7 +60,7 @@ export class SensorChartComponent {
       btn.type = "submit";
       btn.textContent = "Actualizar";
       btn.className = "bg-blue-600 text-white px-3 py-1 rounded";
-  
+        
       // 🆕 Botón de descarga
       const downloadBtn = document.createElement("button");
       downloadBtn.type = "button";
@@ -107,6 +107,14 @@ export class SensorChartComponent {
       const canvas = document.createElement("canvas");
       canvas.height = 200;
       wrapper.appendChild(canvas);
+
+      const info = document.createElement("p");
+
+      info.className = "text-sm text-gray-600 mb-2 text-center my-3";
+      info.textContent = 
+        "Valores promedio";
+      
+      wrapper.appendChild(info);
   
       this.body.appendChild(wrapper);
         
@@ -194,61 +202,86 @@ export class SensorChartComponent {
     }
     
     renderChart(canvas, fromISO, toISO) {
-      const fromDate = new Date(fromISO);
-      const toDate = new Date(toISO);
-      const diffMin = (toDate - fromDate) / 1000 / 60;
-
-      let timeUnit = "minute";
-      if (diffMin <= 60) timeUnit = "minute";
-      else if (diffMin <= 360) timeUnit = "minute";
-      else if (diffMin <= 1440) timeUnit = "hour";
-      else if (diffMin <= 10080) timeUnit = "day";
-      else timeUnit = "week";
-
-      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}&buckets=50`;
+      const ctx = canvas.getContext("2d");
+      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}&buckets=20`;
 
       fetch(url)
         .then(res => res.json())
         .then(data => {
+          // Si no hay datos, destruye el chart y crea uno vacío
           if (!data.data || data.data.length === 0) {
             if (this.chart) this.chart.destroy();
-            this.chart = new Chart(canvas.getContext("2d"), {
+            this.chart = new Chart(ctx, {
               type: "line",
-              data: { labels: [], datasets: [] },
+              data: { datasets: [] },
               options: {
                 plugins: { legend: { display: false } },
-                scales: { x: { type: 'time' }, y: { beginAtZero: true } }
+                scales: {
+                  x: { type: 'time' },
+                  y: { beginAtZero: true }
+                }
               }
             });
             return;
           }
 
-          const labels = data.data.map(d => d.timestamp);
-          const values = data.data.map(d => d.value);
+          // 1. Mapea tus datos a un array de puntos { x: Date, y: Number }
+          const points = data.data.map(d => ({
+            x: new Date(d.timestamp),
+            y: d.value
+          }));
 
+          // 2. Calcula el rango real de datos (min y max)
+          const dataMin = points[0].x;
+          const dataMax = points[points.length - 1].x;
+          const diffMinData = (dataMax - dataMin) / 1000 / 60; // diferencia en minutos
+
+          // 3. Decide la unidad de tiempo según diffMinData
+          let timeUnitData = "minute";
+          if (diffMinData > 60) timeUnitData = "hour";
+          if (diffMinData > 1440) timeUnitData = "day";
+          if (diffMinData > 10080) timeUnitData = "week";
+
+          // 4. Destruye el chart anterior (si existe) y crea uno nuevo
           if (this.chart) this.chart.destroy();
-
-          this.chart = new Chart(canvas.getContext("2d"), {
+          this.chart = new Chart(ctx, {
             type: "line",
             data: {
-              labels,
               datasets: [{
                 label: "Sensor",
-                data: labels.map((x, i) => ({ x, y: values[i] })),
+                data: points,
                 borderColor: "rgb(59, 130, 246)",
                 backgroundColor: "rgba(59, 130, 246, 0.1)",
                 tension: 0.3,
-                pointRadius: 3
+                pointRadius: 0
               }]
             },
             options: {
               responsive: true,
+              parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+              },
               scales: {
                 x: {
                   type: 'time',
-                  time: { unit: timeUnit }
+                  time: {
+                    unit: timeUnitData,
+                    displayFormats: {
+                      minute: 'HH:mm',
+                      hour: 'HH:mm',
+                      day: 'dd/MM',
+                      week: 'dd/MM/yyyy'
+                    }
+                  },
+                  ticks: {
+                    source: 'data',
+                    autoSkip: true
+                  }
                 },
-                y: { beginAtZero: false }
+                y: {
+                  beginAtZero: false
+                }
               },
               plugins: {
                 legend: { display: true },
@@ -261,5 +294,4 @@ export class SensorChartComponent {
           console.error("Error cargando datos del sensor:", err);
         });
     }
-
-  }
+}
