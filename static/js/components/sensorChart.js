@@ -1,7 +1,7 @@
 // static/js/components/sensorChart.js
 
 export class SensorChartComponent {
-    constructor(root) {
+    constructor(root) {this.body
       this.root = root;
       this.sensorId = root.dataset.sensorId;
       this.mode = "realtime";
@@ -11,7 +11,6 @@ export class SensorChartComponent {
       this.fullscreenBtn = this.root.querySelector(".fullscreen-btn");
       this.fullscreenBtn.addEventListener("click", () => this.expandToFullscreen());
       
-  
       this.chart = null; // instancia Chart.js
       this.init();
     }
@@ -27,11 +26,11 @@ export class SensorChartComponent {
       const icon = this.btnToggle.querySelector("img.icon-toggle");
     
       if (this.mode === "realtime") {
-        icon.src = "/static/img/graph.png";        // cambiar al ícono de gráfico
+        icon.src = "/static/img/graph.png";
         icon.alt = "Gráfico";
         this.btnToggle.title = "Ver gráfico";
       } else {
-        icon.src = "/static/img/live.png";         // cambiar al ícono de live
+        icon.src = "/static/img/live.png";
         icon.alt = "Tiempo real";
         this.btnToggle.title = "Ver tiempo real";
       }
@@ -41,38 +40,13 @@ export class SensorChartComponent {
     
     render() {
       this.body.innerHTML = "";
-      if (this.mode === "realtime") {
-        this.renderRealtime();
-      } else {
+      if (this.mode === "historical") {
         this.renderHistorical();
       }
+      // En modo realtime no se renderiza gráfico: el componente externo 'RealTimeUpdater' se encarga de actualizar valores.
     }
   
-    renderRealtime() {
-      const valor = document.createElement("p");
-      valor.id = `valor-${this.sensorId}`;
-      valor.className = "text-4xl font-bold text-blue-600 text-center";
-      valor.textContent = "-- °C";
-  
-      this.body.appendChild(valor);
-      this.startRealtimeSimulation(valor);
-    }
-  
-    startRealtimeSimulation(valorEl) {
-      if (this.interval) clearInterval(this.interval);
-  
-      const update = () => {
-        const val = (20 + Math.random() * 10).toFixed(2);
-        valorEl.textContent = `${val} °C`;
-      };
-  
-      update();
-      this.interval = setInterval(update, 2000);
-    }
-
     renderHistorical() {
-      if (this.interval) clearInterval(this.interval);
-  
       const wrapper = document.createElement("div");
   
       // Selectores de fecha/hora
@@ -86,28 +60,93 @@ export class SensorChartComponent {
       btn.type = "submit";
       btn.textContent = "Actualizar";
       btn.className = "bg-blue-600 text-white px-3 py-1 rounded";
-  
-      form.append(from.group, to.group, btn);
+        
+      // 🆕 Botón de descarga
+      const downloadBtn = document.createElement("button");
+      downloadBtn.type = "button";
+      downloadBtn.title = "Descargar";
+      downloadBtn.className = "ml-2";
+      downloadBtn.innerHTML = `
+        <img src="/static/img/download.png" class="w-6 h-6" alt="Descargar">
+      `;
+
+      downloadBtn.addEventListener("click", () => {
+        const fromDate = from.input.value;
+        const toDate = to.input.value;
+        if (!fromDate || !toDate) return;
+
+        const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromDate}&to=${toDate}`;
+        fetch(url)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.data) return;
+
+            const rows = [["timestamp", "value"]];
+            data.data.forEach(d => rows.push([d.timestamp, d.value]));
+
+            const csv = rows.map(r => r.join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `sensor_${this.sensorId}_data.csv`;
+            link.click();
+          });
+      });
+
+      // Grupo para acciones
+      const actions = document.createElement("div");
+      actions.className = "flex items-center gap-2";
+
+      actions.appendChild(btn);
+      actions.appendChild(downloadBtn);
+
+      form.append(from.group, to.group, actions);
+
       wrapper.appendChild(form);
   
       const canvas = document.createElement("canvas");
       canvas.height = 200;
       wrapper.appendChild(canvas);
+
+      const info = document.createElement("p");
+
+      info.className = "text-sm text-gray-600 mb-2 text-center my-3";
+      info.textContent = 
+        "Valores promedio";
+      
+      wrapper.appendChild(info);
   
       this.body.appendChild(wrapper);
-  
+        
+      this.chart = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            label: "Sin datos",
+            data: [],
+            borderColor: "rgba(0, 0, 0, 0.2)",
+            backgroundColor: "rgba(0, 0, 0, 0.05)",
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { type: 'time' },
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          }
+        }
+      });
+
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         this.renderChart(canvas, from.input.value, to.input.value);
       });
-  
-      // Preload con datos falsos
-      const now = new Date();
-      const before = new Date(now.getTime() - 10 * 60000);
-      from.input.value = before.toISOString().slice(0, 16);
-      to.input.value = now.toISOString().slice(0, 16);
-  
-      this.renderChart(canvas, from.input.value, to.input.value);
+
     }
   
     createDateInput(name, label) {
@@ -130,36 +169,29 @@ export class SensorChartComponent {
       const container = document.getElementById("fullscreen-container");
       container.innerHTML = ""; // limpiar anteriores
     
-      // Crear wrapper centrado para el componente
       const wrapper = document.createElement("div");
       wrapper.className = "max-w-5xl mx-auto";
 
-      // Clonar componente
       const cloned = this.root.cloneNode(true);
       cloned.classList.add("bg-white", "rounded", "shadow", "p-4");
 
-      // Crear botón de cerrar flotante global
       const closeBtn = document.createElement("button");
-      closeBtn.textContent = "Cerrar";
-      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
       closeBtn.innerHTML = `
         <button class="bg-red-500 text-white px-4 py-2 rounded shadow">
           Cerrar
         </button>
-      `;      closeBtn.addEventListener("click", () => this.exitFullscreen());
+      `;
+      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
+      closeBtn.addEventListener("click", () => this.exitFullscreen());
 
-      // Append
       wrapper.appendChild(cloned);
-      // container.innerHTML = ""; // Limpia
       container.appendChild(closeBtn);  
       container.appendChild(wrapper);
 
-      // Mostrar overlay
       container.classList.remove("hidden");
       document.body.classList.add("overflow-hidden");
     
-      // Inicializar funcionalidad JS en el nuevo clon
-      new SensorChartComponent(cloned);  // crear nueva instancia sobre el clon
+      new SensorChartComponent(cloned);
     }
 
     exitFullscreen() {
@@ -170,83 +202,96 @@ export class SensorChartComponent {
     }
     
     renderChart(canvas, fromISO, toISO) {
-      const fromDate = new Date(fromISO);
-      const toDate = new Date(toISO);
-      const diffMin = (toDate - fromDate) / 1000 / 60;
-    
-      // Elegir unidad para eje X según el rango
-      let timeUnit = "minute";
-      if (diffMin <= 60) timeUnit = "minute";
-      else if (diffMin <= 60 * 6) timeUnit = "minute";
-      else if (diffMin <= 60 * 24) timeUnit = "hour";
-      else if (diffMin <= 60 * 24 * 7) timeUnit = "day";
-      else timeUnit = "week";
-    
-      // Generar datos simulados entre from y to
-      const numPoints = 15;
-      const labels = [];
-      const values = [];
-      const step = (toDate - fromDate) / numPoints;
-    
-      for (let i = 0; i < numPoints; i++) {
-        const ts = new Date(fromDate.getTime() + i * step);
-        labels.push(ts.toISOString()); // timestamp ISO para eje temporal
-        values.push((20 + Math.random() * 10).toFixed(2));
-      }
-    
-      if (this.chart) this.chart.destroy();
-    
-      this.chart = new Chart(canvas.getContext("2d"), {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "Temperatura",
-            data: labels.map((t, i) => ({ x: t, y: values[i] })),
-            borderColor: "rgb(59, 130, 246)",
-            backgroundColor: "rgba(59, 130, 246, 0.2)",
-            tension: 0.3
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              type: 'time',
-              time: {
-                unit: timeUnit,
-                tooltipFormat: 'DD T',
-                displayFormats: {
-                  minute: 'HH:mm',
-                  hour: 'HH:mm',
-                  day: 'dd/MM',
-                  week: 'dd/MM',
-                },
-              },
-              title: {
-                display: true,
-                text: 'Tiempo'
+      const ctx = canvas.getContext("2d");
+      const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}&buckets=20`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          // Si no hay datos, destruye el chart y crea uno vacío
+          if (!data.data || data.data.length === 0) {
+            if (this.chart) this.chart.destroy();
+            this.chart = new Chart(ctx, {
+              type: "line",
+              data: { datasets: [] },
+              options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                  x: { type: 'time' },
+                  y: { beginAtZero: true }
+                }
               }
-            },
-            y: {
-              beginAtZero: false,
-              title: {
-                display: true,
-                text: '°C'
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: true
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false
-            }
+            });
+            return;
           }
-        }
-      });
+
+          // 1. Mapea tus datos a un array de puntos { x: Date, y: Number }
+          const points = data.data.map(d => ({
+            x: new Date(d.timestamp),
+            y: d.value
+          }));
+
+          // 2. Calcula el rango real de datos (min y max)
+          const dataMin = points[0].x;
+          const dataMax = points[points.length - 1].x;
+          const diffMinData = (dataMax - dataMin) / 1000 / 60; // diferencia en minutos
+
+          // 3. Decide la unidad de tiempo según diffMinData
+          let timeUnitData = "minute";
+          if (diffMinData > 60) timeUnitData = "hour";
+          if (diffMinData > 1440) timeUnitData = "day";
+          if (diffMinData > 10080) timeUnitData = "week";
+
+          // 4. Destruye el chart anterior (si existe) y crea uno nuevo
+          if (this.chart) this.chart.destroy();
+          this.chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              datasets: [{
+                label: "Sensor",
+                data: points,
+                borderColor: "rgb(59, 130, 246)",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                tension: 0.3,
+                pointRadius: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              parsing: {
+                xAxisKey: 'x',
+                yAxisKey: 'y'
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    unit: timeUnitData,
+                    displayFormats: {
+                      minute: 'HH:mm',
+                      hour: 'HH:mm',
+                      day: 'dd/MM',
+                      week: 'dd/MM/yyyy'
+                    }
+                  },
+                  ticks: {
+                    source: 'data',
+                    autoSkip: true
+                  }
+                },
+                y: {
+                  beginAtZero: false
+                }
+              },
+              plugins: {
+                legend: { display: true },
+                tooltip: { intersect: false, mode: 'index' }
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.error("Error cargando datos del sensor:", err);
+        });
     }
-  }
-  
+}

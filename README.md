@@ -1,19 +1,50 @@
-### Descripción de la Arquitectura
 
-**Django + Cliente MQTT:**
+## 🛰️ Topología MQTT y Estructura de Tópicos
 
-- Un proceso en segundo plano (un comando de gestión de Django o un trabajador de Celery) se suscribe a temas MQTT.  
-- Cuando llega un nuevo mensaje MQTT, se reenvía a Django Channels (consumidor WebSocket).  
+Este proyecto utiliza el protocolo **MQTT** para la recolección de datos desde sensores físicos (o simulados) mediante el broker **Mosquitto**.
 
-**Django Channels (Capa WebSocket):**  
+### 🧭 Convención de Tópicos
 
-- Maneja conexiones WebSocket en tiempo real con los usuarios.  
-- Al recibir un mensaje MQTT, envía el valor actualizado del tema a todos los clientes conectados.  
+Todos los sensores publican datos utilizando la siguiente estructura:
 
-**Frontend (Cliente WebSocket en JavaScript):**  
+```
+sensors/<tipo>/<nombre>
+```
 
-- Los usuarios se suscriben a actualizaciones en tiempo real a través de WebSocket.  
-- Cuando el servidor envía nuevos mensajes MQTT, la interfaz de usuario se actualiza instantáneamente.
+Donde:
+- `<tipo>`: categoría del sensor (por ejemplo, `temperatura`, `humedad`, `ph`, etc.)
+- `<nombre>`: nombre o identificador único del sensor (ej. `lab1`, `plantaA`, `entrada`)
+
+#### 📌 Ejemplos
+
+| Tópico                            | Descripción                             |
+|----------------------------------|-----------------------------------------|
+| `sensors/temperatura/lab1`       | Sensor de temperatura en el Laboratorio 1 |
+| `sensors/humedad/plantaA`        | Sensor de humedad en planta A             |
+| `sensors/ph/cultivo1`            | Sensor de pH en cultivo 1                 |
+| `sensors/luminosidad/entrada`    | Sensor de luz en zona de entrada          |
+
+---
+
+### 📦 Payload Esperado
+
+Cada mensaje publicado por un sensor debe seguir el formato JSON siguiente:
+
+```json
+{
+  "value": 23.5,
+  "unit": "°C",
+  "timestamp": "2025-04-12T16:12:00Z"
+}
+```
+
+**Campos esperados:**
+
+| Campo     | Tipo   | Descripción                                  |
+|-----------|--------|----------------------------------------------|
+| `value`   | float  | Valor numérico medido                        |
+| `unit`    | string | Unidad de medida (`°C`, `%`, `ppm`, etc.)    |
+| `timestamp` | string | Fecha y hora en formato ISO 8601 UTC         |
 
 
 ```bash

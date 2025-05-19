@@ -1,0 +1,92 @@
+[
+  {
+    "model": "sensors.actuator",
+    "pk": 1,
+    "fields": {
+      "name": "Luz Principal",
+      "actuator_type": "binario",
+      "value_boolean": true
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 2,
+    "fields": {
+      "name": "Aire Acondicionado",
+      "actuator_type": "texto",
+      "value_text": ""
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 3,
+    "fields": {
+      "name": "Puerta Principal",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 4,
+    "fields": {
+      "name": "Extractor de Gas",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 5,
+    "fields": {
+      "name": "Bomba de Agua",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 6,
+    "fields": {
+      "name": "Ventilador Industrial",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 7,
+    "fields": {
+      "name": "Cortina Térmica",
+      "actuator_type": "texto",
+      "value_text": ""
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 8,
+    "fields": {
+      "name": "Calefactor de Suelo",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 9,
+    "fields": {
+      "name": "Sistema de Riego",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 10,
+    "fields": {
+      "name": "Sirena de Alarma",
+      "actuator_type": "binario",
+      "value_boolean": false
+    }
+  }
+]
