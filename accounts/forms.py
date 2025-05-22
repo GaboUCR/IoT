@@ -67,5 +67,5 @@ class SignUpForm(UserCreationForm):
     def clean_license(self):
         codigo = self.cleaned_data.get("license")
         if codigo != settings.SIGNUP_LICENSE:
-            raise ValidationError("El código de licencia no es válido.")
+            raise ValidationError("License code is not valid!")
         return codigo

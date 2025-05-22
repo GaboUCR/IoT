@@ -1,0 +1,153 @@
+version: "3.8"
+
+services:
+  # -------------------------------------------------
+  # 1) Django + Gunicorn (WSGI) — servidor web
+  # -------------------------------------------------
+  web:
+    build: .
+    image: iot_ucr_app:latest
+    command: gunicorn iot_ucr.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+    depends_on:
+      - mosquitto
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 2) MQTT broker Mosquitto
+  # -------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 3) Subscriber MQTT — siempre activo
+  # -------------------------------------------------
+  mqtt_subscriber:
+    image: iot_ucr_app:latest
+    command: python manage.py mqtt_subscriber
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+      MQTT_HOST: mosquitto
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      - web
+      - mosquitto
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 4) Publisher MQTT — siempre activo
+  # -------------------------------------------------
+  mqtt_publisher:
+    image: iot_ucr_app:latest
+    command: python manage.py mqtt_publisher
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+      MQTT_HOST: mosquitto
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      - web
+      - mosquitto
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 5) Mock Publisher (dev) — siempre activo
+  # -------------------------------------------------
+  mock_publisher:
+    image: iot_ucr_app:latest
+    command: python manage.py publisher_mock
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+      MQTT_HOST: mosquitto
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      - web
+      - mosquitto
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 6) Init Data — al arrancar solo una vez
+  # -------------------------------------------------
+  init_data:
+    image: iot_ucr_app:latest
+    command: python manage.py generate_historical_data
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+    depends_on:
+      - web
+    restart: "no"
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 7) Compact Sensor Data — cada 5 minutos
+  # -------------------------------------------------
+  compact_sensor_data:
+    image: iot_ucr_app:latest
+    command: >
+      sh -c "
+        while true; do
+          python manage.py compact_sensor_data &&
+          sleep 300;
+        done
+      "
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      DJANGO_SETTINGS_MODULE: iot_ucr.settings.base
+    depends_on:
+      - web
+    networks:
+      - iot-net
+
+  # -------------------------------------------------
+  # 8) Purge Oldest Day — cada 24h a la medianoche
+  # -------------------------------------------------
+  purge_oldest_day:
+    image: iot_ucr_app:latest
+    command: >-
+      sh -c "
+        # dormimos hasta medianoche UTC
+        sleep $$(( (24 - $$(date +%H)) * 3600 - $$(date +%M) * 60 - $$(date +%S) ));
+        while true; do
+          python manage.py purge_oldest_day &&
+          sleep 86400;
+        done
+      "
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DJANGO_SETTINGS_MODULE=iot_ucr.settings.base
+    depends_on:
+      - web
+    networks:
+      - iot-net
+
+networks:
+  iot-net:
+    name: iot-net
+    driver: bridge

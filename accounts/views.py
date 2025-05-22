@@ -6,6 +6,11 @@ from django.views.generic   import FormView
 from django.contrib.auth    import login
 from django.contrib.auth.views import LoginView, LogoutView
 from .forms                 import StyledAuthenticationForm, SignUpForm
+from django.conf import settings
+from django.contrib.auth import get_user_model, login
+from django.views import View
+from .models import Profile
+
 
 class HomeView(View):
     """
@@ -66,3 +71,23 @@ class CustomLogoutView(LogoutView):
     Solo cierra sesión y redirige al login.
     """
     next_page = reverse_lazy("login")
+
+class GuestLoginView(View):
+    def post(self, request, *args, **kwargs):
+
+        User = get_user_model()
+        username = settings.GUEST_USERNAME
+
+        guest, created = User.objects.get_or_create(
+            username=username,
+            defaults={"first_name": "Invitado", "email": ""}
+        )
+
+        # Siempre asegúrate de que tenga un Profile
+        if not hasattr(guest, 'profile'):
+            Profile.objects.create(user=guest, license="1234")
+
+        guest.set_unusable_password()
+        guest.save()
+        login(request, guest)
+        return redirect("dashboard")

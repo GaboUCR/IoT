@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Iniciar Sesión{% endblock %}
+{% block title %}IoT UCR{% endblock %}
 
 {% block header %}{% endblock %}
 
@@ -38,11 +38,24 @@
         {{ form_login.password.errors }}
       </div>
       <button type="submit"
-              class="w-full bg-blue-600 text-white py-2 my-4 rounded-lg 
+              class="w-full bg-blue-600 text-white py-2 mt-4 rounded-lg 
                      hover:bg-blue-700 transition">
         Entrar
       </button>
     </form>
+
+    <form method="post" action="{% url 'guest-login' %}">
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="px-4 py-2 font-semibold rounded-lg focus:outline-none
+              bg-yellow-500 text-white border border-transparent
+              hover:bg-yellow-600 transition w-full"
+      >
+        Acceder como Invitado
+      </button>
+    </form>
+
   </div>
 
   {# SIGNUP FORM #}
@@ -74,13 +87,26 @@
         {{ form_signup.license.label_tag }}
         {{ form_signup.license }}
         {{ form_signup.license.errors }}
+        <span>Licence is 1234 for this porfolio version</span>
       </div>
       <button type="submit"
-              class="w-full bg-green-600 text-white py-2 my-4 rounded-lg 
+              class="w-full bg-green-600 text-white py-2 mt-4 rounded-lg 
                      hover:bg-green-700 transition">
         Registrarme
       </button>
     </form>
+
+     <form method="post" action="{% url 'guest-login' %}">
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="px-4 py-2 font-semibold rounded-lg focus:outline-none
+              bg-yellow-500 text-white border border-transparent
+              hover:bg-yellow-600 transition w-full"
+      >
+        Acceder como Invitado
+      </button>
+      </form>
   </div>
 </div>
 

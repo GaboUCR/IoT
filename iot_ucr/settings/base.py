@@ -29,7 +29,15 @@ environ.Env.read_env(BASE_DIR / '.env')
 SECRET_KEY = env("SECRET_KEY")
 
 # License
-SIGNUP_LICENSE = os.environ.get("SIGNUP_LICENSE", "")
+SIGNUP_LICENSE = "1234"
+
+# settings.py
+
+# Nombre de usuario único para el invitado
+GUEST_USERNAME = "guest_user"
+
+# Flag para activar el modo portfolio (sin comprobación de licencia)
+PORTFOLIO_MODE = True
 
 
 # Debug
@@ -38,11 +46,6 @@ DEBUG = env("DEBUG")
 # Allowed hosts
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-# Static files
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
 
 LOGIN_URL          = "/login/"
 LOGIN_REDIRECT_URL = "/"
@@ -69,6 +72,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -79,6 +83,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'iot_ucr.urls'
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 TEMPLATES = [
     {
@@ -108,6 +116,12 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# # en settings/base.py, justo después de DATABASES:
+# DATABASES['default']['OPTIONS'] = {
+#     'timeout': 20,            # segundos a esperar por un lock
+#     'journal_mode': 'wal',
+# }
 
 
 # Password validation
@@ -143,8 +157,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = 'static/'
+# Static files
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

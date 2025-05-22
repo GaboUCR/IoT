@@ -7,15 +7,18 @@ from datetime import datetime
 import pytz
 import json
 import time
+import os 
 
 class Command(BaseCommand):
     help = "Publica el estado de los actuadores solo si cambia"
 
     def handle(self, *args, **options):
         tz = pytz.timezone("America/Costa_Rica")
+
+        mqtt_host = os.environ.get("MQTT_HOST", "localhost")
         client = mqtt.Client()
-        client.connect("localhost", 1883, 60)
-        self.stdout.write(self.style.SUCCESS("Conectado a broker MQTT (localhost:1883)"))
+        client.connect(mqtt_host, 1883, 60)
+        self.stdout.write(self.style.SUCCESS(f"Conectado a broker MQTT ({mqtt_host}:1883)"))
 
         last_values = {}  # clave: actuator.id → valor actual
 

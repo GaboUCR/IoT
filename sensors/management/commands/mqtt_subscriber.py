@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 from sensors.models import Sensor, SensorReading
 from django.utils.dateparse import parse_datetime
 import json
+import os
 
 class Command(BaseCommand):
     help = "Suscribe a MQTT y persiste lecturas en BD"
@@ -15,8 +16,9 @@ class Command(BaseCommand):
         client.on_message = self.on_message
 
         # Conectar al broker local
-        client.connect("localhost", 1883, 60)
-        self.stdout.write(self.style.SUCCESS("Conectado a MQTT broker en localhost:1883"))
+        mqtt_host = os.environ.get("MQTT_HOST", "localhost")
+        client.connect(mqtt_host, 1883, 60)
+        self.stdout.write(self.style.SUCCESS(f"Conectado a MQTT broker en {mqtt_host}:1883"))
 
         # Loop infinito para recibir mensajes
         try:

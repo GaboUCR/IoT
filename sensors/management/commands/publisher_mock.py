@@ -4,10 +4,11 @@ import json
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import pytz  
+import os
 
 # Zona horaria de Costa Rica
 tz = pytz.timezone('America/Costa_Rica')
-
+print("hola")
 # Lista de sensores simulados
 SENSORS = [
     ("temperatura", "Sensor de Temperatura"),
@@ -37,8 +38,11 @@ UNITS = {
 }
 
 # Conexión al broker local
+mqtt_host = os.environ.get("MQTT_HOST", "localhost")
+print("pepa")
+print("pepino:"+mqtt_host)
 client = mqtt.Client()
-client.connect("localhost", 1883, 60)
+client.connect(mqtt_host, 1883, 60)
 
 def simulate_sensor_value(sensor_type):
     ranges = {
