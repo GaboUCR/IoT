@@ -167,40 +167,44 @@ export class SensorChartComponent {
 
     expandToFullscreen() {
       const container = document.getElementById("fullscreen-container");
-      container.innerHTML = ""; // limpiar anteriores
-    
-      const wrapper = document.createElement("div");
-      wrapper.className = "max-w-5xl mx-auto";
-
-      const cloned = this.root.cloneNode(true);
-      cloned.classList.add("bg-white", "rounded", "shadow", "p-4");
-
-      const closeBtn = document.createElement("button");
-      closeBtn.innerHTML = `
-        <button class="bg-red-500 text-white px-4 py-2 rounded shadow">
-          Cerrar
-        </button>
-      `;
-      closeBtn.className = "exit-fullscreen flex justify-end w-full mb-4";
-      closeBtn.addEventListener("click", () => this.exitFullscreen());
-
-      wrapper.appendChild(cloned);
-      container.appendChild(closeBtn);  
-      container.appendChild(wrapper);
-
+      container.innerHTML = "";         // limpia anteriores
       container.classList.remove("hidden");
       document.body.classList.add("overflow-hidden");
-    
-      new SensorChartComponent(cloned);
+
+      // 1) placeholder para devolver el nodo original
+      this._placeholder = document.createComment("sensor-placeholder");
+      this.root.parentNode.replaceChild(this._placeholder, this.root);
+
+      // 2) creamos un div para el botón de cerrar
+      const header = document.createElement("div");
+      header.className = "flex justify-end mb-4";
+
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "bg-red-500 text-white px-4 py-2 rounded shadow";
+      closeBtn.textContent = "Cerrar";
+      closeBtn.addEventListener("click", () => this.exitFullscreen());
+
+      header.appendChild(closeBtn);
+      container.appendChild(header);
+
+      // 3) metemos la tarjeta (this.root) dentro de otro wrapper
+      const wrapper = document.createElement("div");
+      wrapper.className = "max-w-5xl mx-auto bg-white rounded shadow p-4";
+      wrapper.appendChild(this.root);
+      container.appendChild(wrapper);
     }
 
     exitFullscreen() {
       const container = document.getElementById("fullscreen-container");
+      // 1) devolvemos el nodo original a su lugar
+      this._placeholder.parentNode.replaceChild(this.root, this._placeholder);
+      // 2) limpiamos y ocultamos
       container.classList.add("hidden");
       container.innerHTML = "";
       document.body.classList.remove("overflow-hidden");
     }
-    
+
     renderChart(canvas, fromISO, toISO) {
       const ctx = canvas.getContext("2d");
       const url = `/api/sensor-readings/?sensor_id=${this.sensorId}&from=${fromISO}&to=${toISO}&buckets=20`;

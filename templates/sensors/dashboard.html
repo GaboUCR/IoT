@@ -83,20 +83,13 @@
         </div>
       </div>
 
-      {# Última lectura inicial #}
-      {% with sensor.readings.first as last %}
-        {% if last %}
-          <p class="text-3xl font-bold text-blue-600 my-2 text-center">
-            {{ last.value }} {{ sensor.unit }}
-          </p>
-          <p class="text-xl text-gray-400 timestamp text-center">
-            ({{ last.timestamp|date:"H:i:s" }})
-          </p>
-        {% else %}
-          <p class="text-gray-400 text-sm mt-2 last-value">--</p>
-          <p class="text-gray-400 text-xs timestamp">(--)</p>
-        {% endif %}
-      {% endwith %}
+      
+      <p class="text-3xl last-value font-bold text-blue-600 my-2 text-center">
+        --
+      </p>
+      <p class="text-xl text-gray-400 timestamp text-center">
+        (--)
+      </p>
 
       <div class="sensor-body"></div>
     </div>
