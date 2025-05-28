@@ -5,7 +5,8 @@
     "fields": {
       "name": "Sensor de Temperatura",
       "sensor_type": "temperatura",
-      "unit": "°C"
+      "unit": "°C",
+      "topic": "sensors/temperatura/Sensor_de_Temperatura"
     }
   },
   {
@@ -14,7 +15,8 @@
     "fields": {
       "name": "Sensor de Humedad",
       "sensor_type": "humedad",
-      "unit": "%"
+      "unit": "%",
+      "topic": "sensors/humedad/Sensor_de_Humedad"
     }
   },
   {
@@ -23,7 +25,8 @@
     "fields": {
       "name": "Sensor de Voltaje",
       "sensor_type": "voltaje",
-      "unit": "V"
+      "unit": "V",
+      "topic": "sensors/voltaje/Sensor_de_Voltaje"
     }
   },
   {
@@ -32,7 +35,8 @@
     "fields": {
       "name": "Sensor de Presión",
       "sensor_type": "presion",
-      "unit": "Pa"
+      "unit": "Pa",
+      "topic": "sensors/presion/Sensor_de_Presión"
     }
   },
   {
@@ -41,7 +45,8 @@
     "fields": {
       "name": "Sensor de Luminosidad",
       "sensor_type": "luminosidad",
-      "unit": "lx"
+      "unit": "lx",
+      "topic": "sensors/luminosidad/Sensor_de_Luminosidad"
     }
   },
   {
@@ -50,7 +55,8 @@
     "fields": {
       "name": "Sensor de pH",
       "sensor_type": "ph",
-      "unit": "pH"
+      "unit": "pH",
+      "topic": "sensors/ph/Sensor_de_pH"
     }
   },
   {
@@ -59,7 +65,8 @@
     "fields": {
       "name": "Sensor de CO₂",
       "sensor_type": "co2",
-      "unit": "ppm"
+      "unit": "ppm",
+      "topic": "sensors/co2/Sensor_de_CO2"
     }
   },
   {
@@ -68,7 +75,8 @@
     "fields": {
       "name": "Sensor de Gas",
       "sensor_type": "gas",
-      "unit": "ppm"
+      "unit": "ppm",
+      "topic": "sensors/gas/Sensor_de_Gas"
     }
   },
   {
@@ -77,7 +85,8 @@
     "fields": {
       "name": "Sensor de Proximidad",
       "sensor_type": "proximidad",
-      "unit": "cm"
+      "unit": "cm",
+      "topic": "sensors/proximidad/Sensor_de_Proximidad"
     }
   },
   {
@@ -86,7 +95,8 @@
     "fields": {
       "name": "Tarjeta de Lectura de Sensor Ambiental",
       "sensor_type": "ambiente",
-      "unit": "°C"
+      "unit": "°C",
+      "topic": "sensors/ambiente/Tarjeta_de_Lectura_de_Sensor_Ambiental"
     }
   }
 ]

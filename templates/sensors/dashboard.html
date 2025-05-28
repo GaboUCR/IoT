@@ -53,12 +53,13 @@
 
 {% block content %}
 
-  <div id="sensor-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4"
-      style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+  <div id="sensor-container"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 
+              gap-6 px-4 justify-items-center max-w-7xl mx-auto">
 
   {% for sensor in sensors %}
     <div id="sensor-{{ sensor.id }}"
-         class="sensor-component bg-white shadow rounded p-4"
+         class="sensor-component w-full max-w-md h-full min-h-[280px] bg-white shadow rounded p-4 flex flex-col justify-between"
          data-sensor-id="{{ sensor.id }}">
 
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
@@ -101,7 +102,7 @@
   </div>
  
 
-<div id="actuator-container" class="sensor-grid max-h-screen overflow-y-auto grid gap-6 px-2 md:px-4 hidden"
+<div id="actuator-container" class="sensor-grid grid gap-6 px-2 md:px-4 hidden"
      style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
   {% for actuator in actuators %}
     <div class="actuator-component bg-white shadow rounded p-4 space-y-6"
