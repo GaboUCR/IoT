@@ -29,7 +29,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 SECRET_KEY = env("SECRET_KEY")
 
 # License
-SIGNUP_LICENSE = os.environ.get("SIGNUP_LICENSE", "")
+SIGNUP_LICENSE = os.environ.get("SIGNUP_LICENSE_CODE", "")
 
 
 # Debug

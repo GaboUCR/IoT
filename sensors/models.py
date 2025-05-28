@@ -4,6 +4,7 @@ class Sensor(models.Model):
     name = models.CharField(max_length=64, unique=True)
     sensor_type = models.CharField(max_length=32)
     unit = models.CharField(max_length=8)
+    topic = models.CharField(max_length=128, unique=True, default="sensor/null", help_text="Tópico MQTT asociado")
 
     def __str__(self):
         return f"{self.name} ({self.sensor_type})"
@@ -32,6 +33,7 @@ class Actuator(models.Model):
 
     name = models.CharField(max_length=64, unique=True)
     actuator_type = models.CharField(max_length=16, choices=ACTUATOR_TYPE_CHOICES)
+    topic = models.CharField(max_length=128, unique=True, default="sensor/null", help_text="Tópico MQTT asociado")
 
     value_boolean = models.BooleanField(null=True, blank=True)
     value_text = models.CharField(max_length=128, null=True, blank=True)

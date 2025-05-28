@@ -15,10 +15,8 @@ import json
 
 @login_required(login_url='login')
 def dashboard(request):
-    # Consultar todos los sensores y actuadores
-    sensors = Sensor.objects.all()
-    actuators = Actuator.objects.all()
-
+    sensors = request.user.profile.subscribed_sensors.all() 
+    actuators = request.user.profile.subscribed_actuators.all()  
     return render(request, "sensors/dashboard.html", {
         "sensors": sensors,
         "actuators": actuators
