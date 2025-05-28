@@ -20,7 +20,8 @@ def sensor_create(request):
     if request.method == 'POST':
         form = SensorForm(request.POST)
         if form.is_valid():
-            form.save()
+            sensor = form.save()
+            request.user.profile.subscribed_sensors.add(sensor)
             return redirect('dashboard')
     else:
         form = SensorForm()
@@ -31,7 +32,9 @@ def actuator_create(request):
     if request.method == 'POST':
         form = ActuatorForm(request.POST)
         if form.is_valid():
-            form.save()
+            actuators = form.save()
+            request.user.profile.subscribed_actuators.add(actuators)
+
             return redirect('dashboard')
     else:
         form = ActuatorForm()
@@ -40,8 +43,13 @@ def actuator_create(request):
 
 @login_required(login_url='login')
 def dashboard(request):
-    sensors   = Sensor.objects.all()
-    actuators = Actuator.objects.all()
+    profile = request.user.profile
+
+    # Solo los sensores y actuadores a los que este usuario está suscrito
+    sensors   = profile.subscribed_sensors.all()
+    actuators = profile.subscribed_actuators.all()
+
+    print(sensors)
 
     # Instancias vacías para renderizar en el modal
     sensor_form   = SensorForm()

@@ -1,24 +1,31 @@
-<form method="post" action="{% url 'actuator_create' %}" class="bg-white p-6 rounded shadow-md space-y-4">
+{# templates/sensors/actuator_form.html #}
+<form method="post" action="{% url 'actuator_create' %}"
+      class="bg-white p-8 max-w-lg mx-auto border border-gray-300 rounded-lg shadow-lg space-y-6">
   {% csrf_token %}
-  <h2 class="text-xl font-semibold">Nuevo Actuador</h2>
+  <h2 class="text-2xl font-semibold mb-4">Nuevo Actuador</h2>
+
   {{ form.non_field_errors }}
+
   <div>
     {{ form.name.label_tag }}
     {{ form.name }}
     {{ form.name.errors }}
   </div>
+
   <div>
     {{ form.actuator_type.label_tag }}
     {{ form.actuator_type }}
     {{ form.actuator_type.errors }}
   </div>
+
   <div>
     {{ form.topic.label_tag }}
     {{ form.topic }}
     {{ form.topic.errors }}
   </div>
+
   <button type="submit"
-          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
     Crear Actuador
   </button>
 </form>

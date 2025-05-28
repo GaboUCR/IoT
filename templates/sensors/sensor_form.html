@@ -1,29 +1,37 @@
-<form method="post" action="{% url 'sensor_create' %}" class="bg-white p-6 rounded shadow-md space-y-4">
+{# templates/sensors/sensor_form.html #}
+<form method="post" action="{% url 'sensor_create' %}"
+      class="bg-white p-8 max-w-lg mx-auto border border-gray-300 rounded-lg shadow-lg space-y-6">
   {% csrf_token %}
-  <h2 class="text-xl font-semibold">Nuevo Sensor</h2>
+  <h2 class="text-2xl font-semibold mb-4">Nuevo Sensor</h2>
+
   {{ form.non_field_errors }}
+
   <div>
-    {{ form.name.label_tag }}  
+    {{ form.name.label_tag }}
     {{ form.name }}
     {{ form.name.errors }}
   </div>
+
   <div>
     {{ form.sensor_type.label_tag }}
     {{ form.sensor_type }}
     {{ form.sensor_type.errors }}
   </div>
+
   <div>
     {{ form.unit.label_tag }}
     {{ form.unit }}
     {{ form.unit.errors }}
   </div>
+
   <div>
     {{ form.topic.label_tag }}
     {{ form.topic }}
     {{ form.topic.errors }}
   </div>
+
   <button type="submit"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
     Crear Sensor
   </button>
 </form>
