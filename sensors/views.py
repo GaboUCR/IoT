@@ -1,6 +1,6 @@
 # sensors/views/dashboard.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from sensors.models import Sensor, SensorReading, Actuator
 from django.http       import JsonResponse
@@ -9,19 +9,50 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt  
 from django.views.decorators.http import require_GET
 from django.utils.dateparse import parse_datetime
+from .forms import SensorForm, ActuatorForm
 
 import json
 
 
+
+@login_required
+def sensor_create(request):
+    if request.method == 'POST':
+        form = SensorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = SensorForm()
+    return render(request, 'sensors/sensor_form.html', {'form': form})
+
+@login_required
+def actuator_create(request):
+    if request.method == 'POST':
+        form = ActuatorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = ActuatorForm()
+    return render(request, 'sensors/actuator_form.html', {'form': form})
+
+
 @login_required(login_url='login')
 def dashboard(request):
-    sensors = request.user.profile.subscribed_sensors.all() 
-    actuators = request.user.profile.subscribed_actuators.all()  
-    return render(request, "sensors/dashboard.html", {
-        "sensors": sensors,
-        "actuators": actuators
-    })
+    sensors   = Sensor.objects.all()
+    actuators = Actuator.objects.all()
 
+    # Instancias vacías para renderizar en el modal
+    sensor_form   = SensorForm()
+    actuator_form = ActuatorForm()
+
+    return render(request, "sensors/dashboard.html", {
+        "sensors":        sensors,
+        "actuators":      actuators,
+        "sensor_form":    sensor_form,
+        "actuator_form":  actuator_form,
+    })
 
 @login_required
 def latest_readings(request):

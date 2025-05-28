@@ -12,8 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".actuator-component")
     .forEach(el => new ActuatorComponent(el));
 
-  new FormModal();
+  // sensor
+  new FormModal("form-modal", "open-form-modal", "close-form-modal");
 
+  // actuator
+  new FormModal("actuator-form-modal", "open-actuator-form-modal", "close-actuator-form-modal");
   // 2) Inicializar toggle pub/sub…
   const toggleBtn = document.getElementById("toggle-pub-sub");
   if (toggleBtn) {
