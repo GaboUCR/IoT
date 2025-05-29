@@ -25,7 +25,7 @@ def sensor_create(request):
             return redirect('dashboard')
     else:
         form = SensorForm()
-    return render(request, 'sensors/sensor_form.html', {'form': form})
+    return render(request, 'sensors/sensor_form.html', {'sensor_form': form})
 
 @login_required
 def actuator_create(request):
@@ -33,34 +33,34 @@ def actuator_create(request):
         form = ActuatorForm(request.POST)
         if form.is_valid():
             actuators = form.save()
-            request.user.profile.subscribed_actuators.add(actuators)
+            request.user.profile.subscribed_actuators.add(actuators) 
 
             return redirect('dashboard')
     else:
         form = ActuatorForm()
-    return render(request, 'sensors/actuator_form.html', {'form': form})
+    return render(request, 'sensors/actuator_form.html', {'actuator_form': form})
 
 
 @login_required(login_url='login')
 def dashboard(request):
     profile = request.user.profile
-
-    # Solo los sensores y actuadores a los que este usuario está suscrito
-    sensors   = profile.subscribed_sensors.all()
+    sensors = profile.subscribed_sensors.all()
     actuators = profile.subscribed_actuators.all()
 
-    print(sensors)
-
-    # Instancias vacías para renderizar en el modal
-    sensor_form   = SensorForm()
+    sensor_form = SensorForm()
     actuator_form = ActuatorForm()
 
-    return render(request, "sensors/dashboard.html", {
-        "sensors":        sensors,
-        "actuators":      actuators,
-        "sensor_form":    sensor_form,
-        "actuator_form":  actuator_form,
-    })
+    context = {
+        "sensors": sensors,
+        "actuators": actuators,
+        "sensor_form": sensor_form,
+        "actuator_form": actuator_form,
+        "show_sensor_form": request.GET.get("sensor_form") == "1",
+        "show_actuator_form": request.GET.get("actuator_form") == "1",
+    }
+
+    return render(request, "sensors/dashboard.html", context)
+
 
 @login_required
 def latest_readings(request):

@@ -1,53 +1,14 @@
 <!-- templates/sensors/dashboard.html -->
 {% extends "base.html" %}
 {% load static %}
-
+{% load widget_tweaks %}
 {% block title %}IoT UCR{% endblock %}
 
 
 {% block header %}
-  <header class="bg-white shadow p-4 mb-6">
-    <div class="container mx-auto flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">Plataforma IoT UCR</h1>
 
-      <!-- Contenedor de botones del header -->
-      <div class="flex items-center gap-4">
-        
-        <!-- Botón para formulario "Agregar sensor" -->
-        <button id="open-form-modal" class="w-8 h-8 flex items-center justify-center">
-          <img src="{% static 'img/add.png' %}" alt="Agregar" class="h-8 w-8" title="Agregar sensor">
-        </button>
+{% include "navbar.html" %}
 
-        <button id="open-actuator-form-modal" class="w-8 h-8 flex items-center justify-center" title="Agregar actuador">
-          <img src="{% static 'img/add_actuator.png' %}" alt="+" class="h-8 w-8">
-        </button>
-
-        <!-- Botón para alternar pub/sub -->
-        <button id="toggle-pub-sub" class="w-8 h-8 flex items-center justify-center">
-          <!-- Imagen inicial (por ejemplo sub.png) -->
-          <img id="pub-sub-icon"
-              src="{% static 'img/pub.png' %}"
-              alt="sub"
-              class="h-6 w-6  icon-toggle"
-              title="Cambiar modo pub/sub">
-        </button>
-
-        <form method="post" action="{% url 'logout' %}" class="inline">
-          {% csrf_token %}
-          <button id="logout-button" class="w-8 h-8 flex items-center justify-center">
-  
-            <img id="logout-icon"
-                src="{% static 'img/logout.png' %}"
-                alt="sub"
-                class="h-6 w-6  icon-toggle"
-                title="button to logout">
-          </button>
-        </form>
-        
-
-      </div>
-    </div>
-  </header>
 {% endblock %}
 
 
@@ -125,76 +86,5 @@
   {% endfor %}
 </div>
 
-<!-- Modal para formulario del sensor -->
-<div id="form-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-    <!-- Botón cerrar -->
-    <button id="close-form-modal" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
-
-    <!-- Contenido del formulario -->
-      <h2 class="text-xl font-semibold mb-4">Registrar nuevo sensor</h2>
-      <form method="post" action="{% url 'sensor_create' %}">
-        {% csrf_token %}
-        {{ sensor_form.non_field_errors }}
-        <div class="mb-4">
-          {{ sensor_form.name.label_tag }}
-          {{ sensor_form.name }}
-          {{ sensor_form.name.errors }}
-        </div>
-        <div class="mb-4">
-          {{ sensor_form.sensor_type.label_tag }}
-          {{ sensor_form.sensor_type }}
-          {{ sensor_form.sensor_type.errors }}
-        </div>
-        <div class="mb-4">
-          {{ sensor_form.unit.label_tag }}
-          {{ sensor_form.unit }}
-          {{ sensor_form.unit.errors }}
-        </div>
-        <div class="mb-4">
-          {{ sensor_form.topic.label_tag }}
-          {{ sensor_form.topic }}
-          {{ sensor_form.topic.errors }}
-        </div>
-        <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Crear Sensor
-        </button>
-      </form>
-  </div>
-</div>
-
-<!-- Modal para formulario del actuador -->
-<div id="actuator-form-modal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-    <!-- Botón cerrar -->
-    <button id="close-actuator-form-modal" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
-    <!-- Contenido del formulario de actuador -->
-    <h2 class="text-xl font-semibold mb-4">Registrar nuevo actuador</h2>
-    <form method="post" action="{% url 'actuator_create' %}">
-      {% csrf_token %}
-      {{ actuator_form.non_field_errors }}
-      <!-- campos name, actuator_type, topic -->
-      <div class="mb-4">
-        {{ actuator_form.name.label_tag }}
-        {{ actuator_form.name }}
-        {{ actuator_form.name.errors }}
-      </div>
-      <div class="mb-4">
-        {{ actuator_form.actuator_type.label_tag }}
-        {{ actuator_form.actuator_type }}
-        {{ actuator_form.actuator_type.errors }}
-      </div>
-      <div class="mb-4">
-        {{ actuator_form.topic.label_tag }}
-        {{ actuator_form.topic }}
-        {{ actuator_form.topic.errors }}
-      </div>
-      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Crear Actuador
-      </button>
-    </form>
-  </div>
-</div>
 
 {% endblock %}
