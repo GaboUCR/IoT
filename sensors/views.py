@@ -50,6 +50,8 @@ def dashboard(request):
     sensor_form = SensorForm()
     actuator_form = ActuatorForm()
 
+    view_mode = request.GET.get("view", "sub")  # 👈 AQUÍ
+
     context = {
         "sensors": sensors,
         "actuators": actuators,
@@ -57,6 +59,7 @@ def dashboard(request):
         "actuator_form": actuator_form,
         "show_sensor_form": request.GET.get("sensor_form") == "1",
         "show_actuator_form": request.GET.get("actuator_form") == "1",
+        "view_mode": view_mode,  # 👈 Y AQUÍ
     }
 
     return render(request, "sensors/dashboard.html", context)

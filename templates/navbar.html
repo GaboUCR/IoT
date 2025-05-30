@@ -18,14 +18,11 @@
         <img src="{% static 'img/add_actuator.png' %}" alt="+" class="h-8 w-8">
       </a>
 
-        <!-- Botón para alternar pub/sub -->
-        <button id="toggle-pub-sub" class="w-8 h-8 flex items-center justify-center">
-          <!-- Imagen inicial (por ejemplo sub.png) -->
-          <img id="pub-sub-icon"
-              src="{% static 'img/pub.png' %}"
-              alt="sub"
-              class="h-6 w-6  icon-toggle"
-              title="Cambiar modo pub/sub">
+        <button id="toggle-pub-sub" class="w-8 h-8 flex items-center justify-center" title="Cambiar modo pub/sub">
+        <img id="pub-sub-icon"
+            src="{% static 'img/pub.png' %}"
+            alt="toggle"
+            class="h-6 w-6 icon-toggle">
         </button>
 
         <form method="post" action="{% url 'logout' %}" class="inline">
