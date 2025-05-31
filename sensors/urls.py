@@ -7,6 +7,8 @@ from .views import sensor_create, actuator_create
 
 urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
+    path('dashboard/?view=pub', dashboard, name="actuators"),
+    path('dashboard/?view=sub', dashboard, name="subscribers"),
     path('api/latest-readings/', latest_readings,  name='latest_readings'),
     path('api/update-actuator/', update_actuator, name='update_actuator'),
     path('api/sensor-readings/', sensor_readings_range, name='sensor_readings_range'),

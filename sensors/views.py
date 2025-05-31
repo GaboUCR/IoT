@@ -22,7 +22,7 @@ def sensor_create(request):
         if form.is_valid():
             sensor = form.save()
             request.user.profile.subscribed_sensors.add(sensor)
-            return redirect('dashboard')
+            return redirect('/dashboard/?view=sub')
     else:
         form = SensorForm()
     return render(request, 'sensors/sensor_form.html', {'sensor_form': form})
@@ -35,7 +35,7 @@ def actuator_create(request):
             actuators = form.save()
             request.user.profile.subscribed_actuators.add(actuators) 
 
-            return redirect('dashboard')
+            return redirect('/dashboard/?view=pub')
     else:
         form = ActuatorForm()
     return render(request, 'sensors/actuator_form.html', {'actuator_form': form})
