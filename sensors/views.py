@@ -16,28 +16,46 @@ from accounts.models import Profile
 
 @login_required
 def sensor_create(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = SensorForm(request.POST)
         if form.is_valid():
-            sensor = form.save()
+            # -> Creamos SIEMPRE un nuevo Sensor, sin comprobar topic
+            sensor = form.save(commit=False)
+            sensor.save()
+
+            # y lo suscribimos al perfil del usuario
             request.user.profile.subscribed_sensors.add(sensor)
-            return redirect('/dashboard/?view=sub')
+            return redirect("/dashboard/?view=sub")
     else:
         form = SensorForm()
-    return render(request, 'sensors/sensor_form.html', {'sensor_form': form})
+
+    return render(request, "sensors/sensor_form.html", {"sensor_form": form})
+
 
 @login_required
 def actuator_create(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ActuatorForm(request.POST)
         if form.is_valid():
-            actuators = form.save()
-            request.user.profile.subscribed_actuators.add(actuators) 
-
-            return redirect('/dashboard/?view=pub')
+            cd = form.cleaned_data
+            # Intentamos obtener (o crear) el actuador por su topic único
+            actuator, created = Actuator.objects.get_or_create(
+                topic=cd["topic"],
+                defaults={
+                    "name":          cd["name"],
+                    "actuator_type": cd["actuator_type"],
+                    # Si es de tipo "binario", ponemos value_boolean; si es "texto", value_text
+                    "value_boolean": cd["value_boolean"] if cd["actuator_type"] == "binario" else None,
+                    "value_text":    cd["value_text"]    if cd["actuator_type"] == "texto"   else None,
+                }
+            )
+            # Suscribimos al usuario a este actuador (nuevo o ya existente)
+            request.user.profile.subscribed_actuators.add(actuator)
+            return redirect("/dashboard/?view=pub")
     else:
         form = ActuatorForm()
-    return render(request, 'sensors/actuator_form.html', {'actuator_form': form})
+
+    return render(request, "sensors/actuator_form.html", {"actuator_form": form})
 
 
 @login_required(login_url='login')

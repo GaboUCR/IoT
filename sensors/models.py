@@ -1,10 +1,10 @@
 from django.db import models
 
 class Sensor(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64)
     sensor_type = models.CharField(max_length=32)
     unit = models.CharField(max_length=8)
-    topic = models.CharField(max_length=128, unique=True, default="sensor/null", help_text="Tópico MQTT asociado")
+    topic = models.CharField(max_length=128, default="sensor/null", help_text="Tópico MQTT asociado")
 
     def __str__(self):
         return f"{self.name} ({self.sensor_type})"
@@ -31,9 +31,9 @@ class Actuator(models.Model):
         ("texto", "Texto"),
     ]
 
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64)
     actuator_type = models.CharField(max_length=16, choices=ACTUATOR_TYPE_CHOICES)
-    topic = models.CharField(max_length=128, unique=True, default="sensor/null", help_text="Tópico MQTT asociado")
+    topic = models.CharField(max_length=128, default="sensor/null", help_text="Tópico MQTT asociado")
 
     value_boolean = models.BooleanField(null=True, blank=True)
     value_text = models.CharField(max_length=128, null=True, blank=True)
