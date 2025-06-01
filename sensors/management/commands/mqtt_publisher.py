@@ -8,6 +8,7 @@ import pytz
 import json
 import time
 
+
 class Command(BaseCommand):
     help = (
         "Publica el estado de los actuadores (usando el campo `topic`) "
@@ -22,19 +23,25 @@ class Command(BaseCommand):
         # 2) Caché local: actuator.id → último valor publicado/recibido
         last_values = {}
 
+        # 3) Conjunto de topics a los que ya estamos suscritos
+        subscribed_topics = set()
+
         # ----- CALLBACK: on_connect -----
         def on_connect(mosq, userdata, flags, rc):
             if rc == 0:
                 self.stdout.write(self.style.SUCCESS("Conectado a broker MQTT (localhost:1883)"))
 
-                # Recuperamos solo los topics distintos de Actuator
-                distinct_topics = Actuator.objects.values_list("topic", flat=True).distinct()
-                if not distinct_topics:
-                    self.stdout.write(self.style.WARNING("No hay actuadores en la base de datos para suscribir."))
-                else:
-                    for top in distinct_topics:
-                        client.subscribe(top)
-                    self.stdout.write(self.style.SUCCESS(f"Suscrito a tópicos de actuadores: {list(distinct_topics)}"))
+                # Nos suscribimos a todos los topics distintos de Actuator en BD
+                distinct_topics = set(
+                    Actuator.objects.values_list("topic", flat=True).distinct()
+                )
+                for top in distinct_topics:
+                    client.subscribe(top)
+                subscribed_topics.update(distinct_topics)
+
+                self.stdout.write(
+                    self.style.SUCCESS(f"Suscrito a tópicos de actuadores: {list(distinct_topics)}")
+                )
             else:
                 self.stdout.write(self.style.ERROR(f"Error de conexión MQTT, código: {rc}"))
 
@@ -44,50 +51,47 @@ class Command(BaseCommand):
             Cuando llegue un mensaje por MQTT:
               - Buscamos TODOS los Actuator cuyo campo `topic` coincida con msg.topic
               - Leemos el payload JSON: { "id": <int>, "value": <bool|str>, "timestamp": ... }
-              - Para cada Actuator, si el payload coincide con su id, actualizamos sus campos
+              - Para cada Actuator, actualizamos su valor en BD SOLO si cambió
               - Actualizamos last_values para no re-publicar el mismo valor
             """
             try:
                 payload = json.loads(msg.payload.decode("utf-8"))
-                actuator_id = payload.get("id")
                 new_value = payload.get("value")
-                if actuator_id is None or new_value is None:
+                if new_value is None:
                     self.stderr.write(f"[MQTT→DB] Payload inválido en {msg.topic}: {payload}")
                     return
 
                 # Recuperar todos los actuadores que usen este topic
                 actuators = Actuator.objects.filter(topic=msg.topic)
                 if not actuators.exists():
-                    self.stdout.write(self.style.WARNING(f"[MQTT→DB] No hay actuadores con topic={msg.topic} en BD."))
+                    self.stdout.write(
+                        self.style.WARNING(f"[MQTT→DB] No hay actuadores con topic={msg.topic} en BD.")
+                    )
                     return
 
+                # Para cada actuador con este topic, actualizamos si el valor cambió
                 for act in actuators:
-                    # Validar que el ID coincida (para detectar inconsistencias)
-                    if act.id != actuator_id:
-                        # Si el payload no es para este actuador, solo ignoramos ese registro, pero seguimos con los demás.
-                        self.stdout.write(self.style.WARNING(
-                            f"[MQTT→DB] Payload ID({actuator_id}) no coincide con DB ID({act.id}). Ignorando este actuador."
-                        ))
-                        continue
-
-                    # Dependiendo del tipo, guardamos en el campo correcto
                     if act.actuator_type == "binario":
-                        valor_bool = new_value if isinstance(new_value, bool) \
-                                     else (str(new_value).lower() in ("1", "true", "on", "sí", "si"))
+                        # Convertir new_value a bool
+                        valor_bool = (
+                            new_value if isinstance(new_value, bool)
+                            else (str(new_value).lower() in ("1", "true", "on", "sí", "si"))
+                        )
                         if act.value_boolean == valor_bool:
-                            # Si no cambió, no hacemos nada
                             continue
                         act.value_boolean = valor_bool
-                        act.value_text = None  # limpiamos el campo texto
+                        act.value_text = None  # vaciar campo texto
                     else:  # "texto"
                         valor_str = str(new_value)
                         if act.value_text == valor_str:
                             continue
                         act.value_text = valor_str
-                        act.value_boolean = None  # limpiamos el campo binario
+                        act.value_boolean = None  # vaciar campo binario
 
                     act.save()
-                    self.stdout.write(self.style.SUCCESS(f"[MQTT→DB] Actuador ID={act.id} actualizado en BD: {new_value}"))
+                    self.stdout.write(
+                        self.style.SUCCESS(f"[MQTT→DB] Actuador ID={act.id} actualizado: {new_value}")
+                    )
 
                     # Evitar que, al iterar en el bucle principal, volvamos a publicar el mismo valor
                     last_values[act.id] = new_value
@@ -101,18 +105,35 @@ class Command(BaseCommand):
         client.on_connect = on_connect
         client.on_message = on_message
 
-        # 3) Conectar y arrancar el loop en un hilo aparte
+        # 4) Conectar y arrancar el loop en un hilo aparte
         client.connect("localhost", 1883, 60)
         client.loop_start()
 
         try:
-            # 4) Bucle principal: cada 0.5 seg, revisar BD y publicar cambios
+            # 5) Bucle principal: cada 0.5 seg, revisar DB, publicar cambios y detectar nuevos topics
             while True:
                 now_iso = datetime.now(tz).isoformat()
 
-                # Recorremos todos los actuadores para detectar cambios en BD
+                # —————————————————————————————————————————————————————————
+                # (A) Detectar nuevos actores en BD y suscribirse a sus topics
+                # —————————————————————————————————————————————————————————
+                current_topics = set(
+                    Actuator.objects.values_list("topic", flat=True).distinct()
+                )
+                new_topics = current_topics - subscribed_topics
+                for t in new_topics:
+                    client.subscribe(t)
+                if new_topics:
+                    subscribed_topics.update(new_topics)
+                    self.stdout.write(
+                        self.style.SUCCESS(f"Se agregaron y suscribieron nuevos topics: {list(new_topics)}")
+                    )
+
+                # —————————————————————————————————————————————————————————
+                # (B) Recorremos todos los actuadores para detectar cambios en BD
+                # —————————————————————————————————————————————————————————
                 for act in Actuator.objects.all():
-                    # Obtenemos el valor actual desde la BD
+                    # Obtener el valor actual desde la BD
                     if act.actuator_type == "binario":
                         current_value = act.value_boolean
                     else:
@@ -122,7 +143,7 @@ class Command(BaseCommand):
                     if act.id in last_values and last_values[act.id] == current_value:
                         continue
 
-                    # Publicar en MQTT usando su campo `topic`
+                    # Caso contrario: publicamos en MQTT usando su topic
                     last_values[act.id] = current_value
                     topic_to_publish = act.topic
                     payload = {
@@ -134,14 +155,14 @@ class Command(BaseCommand):
                     }
 
                     client.publish(topic_to_publish, json.dumps(payload))
-                    self.stdout.write(self.style.SUCCESS(
-                        f"[DB→MQTT] Publicado en {topic_to_publish}: {payload}"
-                    ))
+                    self.stdout.write(
+                        self.style.SUCCESS(f"[DB→MQTT] Publicado en {topic_to_publish}: {payload}")
+                    )
 
                 time.sleep(0.5)
 
         except KeyboardInterrupt:
-            # 5) Cierre ordenado
+            # 6) Cierre ordenado
             self.stdout.write(self.style.WARNING("Interrumpido manualmente, cerrando conexión"))
             client.loop_stop()
             client.disconnect()

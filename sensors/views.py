@@ -38,19 +38,21 @@ def actuator_create(request):
         form = ActuatorForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            # Intentamos obtener (o crear) el actuador por su topic único
-            actuator, created = Actuator.objects.get_or_create(
+            actuator_type = cd["actuator_type"]
+
+            # Creamos SIEMPRE un nuevo actuador, ya que topic ya no es único
+            actuator = Actuator(
+                name=cd["name"],
+                actuator_type=actuator_type,
                 topic=cd["topic"],
-                defaults={
-                    "name":          cd["name"],
-                    "actuator_type": cd["actuator_type"],
-                    # Si es de tipo "binario", ponemos value_boolean; si es "texto", value_text
-                    "value_boolean": cd["value_boolean"] if cd["actuator_type"] == "binario" else None,
-                    "value_text":    cd["value_text"]    if cd["actuator_type"] == "texto"   else None,
-                }
+                value_boolean=True if actuator_type == "binario" else None,
+                value_text="ON" if actuator_type == "texto" else None
             )
-            # Suscribimos al usuario a este actuador (nuevo o ya existente)
+            actuator.save()
+
+            # Suscribimos al usuario al actuador recién creado
             request.user.profile.subscribed_actuators.add(actuator)
+
             return redirect("/dashboard/?view=pub")
     else:
         form = ActuatorForm()
