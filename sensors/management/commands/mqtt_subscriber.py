@@ -1,4 +1,5 @@
 # sensors/management/commands/mqtt_subscriber.py
+
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
 from sensors.models import Sensor, SensorReading
@@ -6,19 +7,19 @@ from django.utils.dateparse import parse_datetime
 import json
 
 class Command(BaseCommand):
-    help = "Suscribe a MQTT y persiste lecturas en BD"
+    help = "Se suscribe a MQTT usando el campo `topic` de cada Sensor y persiste las lecturas en BD."
 
     def handle(self, *args, **options):
-        # Configurar cliente MQTT
+        # 1) Configurar cliente MQTT
         client = mqtt.Client()
         client.on_connect = self.on_connect
         client.on_message = self.on_message
 
-        # Conectar al broker local
+        # 2) Conectar al broker local
         client.connect("localhost", 1883, 60)
         self.stdout.write(self.style.SUCCESS("Conectado a MQTT broker en localhost:1883"))
 
-        # Loop infinito para recibir mensajes
+        # 3) Loop infinito para recibir mensajes (los callbacks harán el trabajo)
         try:
             client.loop_forever()
         except KeyboardInterrupt:
@@ -26,36 +27,61 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("Desconectado del broker MQTT"))
 
     def on_connect(self, client, userdata, flags, rc):
-        """Callback al conectar exitosamente al broker"""
-        self.stdout.write(self.style.SUCCESS(f"Suscrito a topics: ['sensors/#'] (rc={rc})"))
-        client.subscribe("sensors/#")
+        """
+        Al conectar, nos suscribimos a cada tópico que exista en la DB.
+        De esta manera, no necesitamos dividir tópicos por tipo/nombre: 
+        simplemente cada Sensor tiene su `topic` configurado.
+        """
+        if rc != 0:
+            self.stderr.write(f"Error al conectar (rc={rc})")
+            return
+
+        # Recuperar todos los sensores activos para suscribirnos
+        sensores = Sensor.objects.all().values_list("topic", flat=True)
+        if not sensores:
+            self.stdout.write(self.style.WARNING("No hay sensores en la base de datos para suscribir."))
+        else:
+            for top in sensores:
+                client.subscribe(top)
+            self.stdout.write(self.style.SUCCESS(f"Suscrito a tópicos de sensores: {list(sensores)}"))
 
     def on_message(self, client, userdata, msg):
-        """Callback al recibir mensaje MQTT"""
+        """
+        Cada vez que llega un mensaje por MQTT:
+          - Buscamos en la BD el Sensor cuyo campo `topic` coincida con msg.topic
+          - Parseamos el payload JSON (debe contener 'value' y 'timestamp')
+          - Creamos un SensorReading
+        """
         try:
-            data = json.loads(msg.payload)
-            value = data.get("value")
-            timestamp_str = data.get("timestamp")
+            payload = json.loads(msg.payload.decode("utf-8"))
+            value = payload.get("value")
+            timestamp_str = payload.get("timestamp")
             ts = parse_datetime(timestamp_str)
 
-            # Extraer tipo y nombre del topic: sensors/<tipo>/<nombre>
-            _, sensor_type, raw_name = msg.topic.split("/", 2)
-            name = raw_name.replace("_", " ")
+            if value is None or ts is None:
+                # Si no vienen ambos campos, no persistimos
+                self.stderr.write(f"[MQTT→DB] Payload incompleto en topic {msg.topic}: {payload}")
+                return
 
-            # Buscar el sensor en la base de datos
-            sensor = Sensor.objects.get(sensor_type=sensor_type, name=name)
+            # Buscar el sensor en la base de datos por su campo `topic`
+            try:
+                sensor = Sensor.objects.get(topic=msg.topic)
+            except Sensor.DoesNotExist:
+                self.stderr.write(f"[MQTT→DB] No se encontró Sensor con topic = {msg.topic}")
+                return
 
-            # Crear lectura y persistir
-            reading = SensorReading.objects.create(
+            # Crear y guardar la lectura
+            SensorReading.objects.create(
                 sensor=sensor,
                 value=value,
                 timestamp=ts
             )
 
             self.stdout.write(self.style.SUCCESS(
-                f"Guardada lectura: Sensor ID={sensor.id}, Valor={value}, Timestamp={ts}"
+                f"[MQTT→DB] Guardada lectura: Sensor ID={sensor.id} ({sensor.name}), Valor={value}, Timestamp={ts}"
             ))
-        except Sensor.DoesNotExist:
-            self.stderr.write(f"Sensor no encontrado para topic {msg.topic}")
+
+        except json.JSONDecodeError:
+            self.stderr.write(f"[MQTT→DB] Payload no JSON en topic {msg.topic}: {msg.payload}")
         except Exception as e:
-            self.stderr.write(f"Error procesando {msg.topic}: {e}")
+            self.stderr.write(f"[MQTT→DB] Error procesando mensaje en {msg.topic}: {e}")

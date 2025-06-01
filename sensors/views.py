@@ -10,9 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.utils.dateparse import parse_datetime
 from .forms import SensorForm, ActuatorForm
-
 import json
-
+from accounts.models import Profile
 
 
 @login_required
@@ -68,13 +67,25 @@ def dashboard(request):
 @login_required
 def latest_readings(request):
     """
-    Devuelve:
-    - Última lectura de cada sensor (timestamp en zona local)
-    - Valor actual de cada actuador
+    Devuelve únicamente:
+    - Última lectura de cada sensor al que el usuario está suscrito.
+    - Valor actual de cada actuador al que el usuario está suscrito.
     """
+    user = request.user
+
+    # Intentamos obtener el profile asociado; si no existiera, devolvemos listas vacías.
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        return JsonResponse({"sensors": [], "actuators": []})
+
+    # ————————————————
+    # Lecturas de Sensores
+    # ————————————————
     sensor_data = []
-    for sensor in Sensor.objects.all():
-        last = sensor.readings.first()
+    # Recorremos solo los sensores suscritos
+    for sensor in profile.subscribed_sensors.all():
+        last = sensor.readings.first()  # readings está ordenado por "-timestamp"
         if last:
             local_ts = timezone.localtime(last.timestamp)
             ts_iso   = local_ts.isoformat()
@@ -90,9 +101,12 @@ def latest_readings(request):
             "timestamp": ts_iso,
         })
 
+    # ————————————————
+    # Valores de Actuadores
+    # ————————————————
     actuator_data = []
-    for actuator in Actuator.objects.all():
-        # Selecciona el campo correcto según el tipo
+    # Recorremos solo los actuadores suscritos
+    for actuator in profile.subscribed_actuators.all():
         if actuator.actuator_type == "texto":
             act_val = actuator.value_text
         else:
@@ -109,6 +123,7 @@ def latest_readings(request):
         "sensors":   sensor_data,
         "actuators": actuator_data,
     })
+
 
 
 @require_GET

@@ -8,65 +8,71 @@ import pytz
 # Zona horaria de Costa Rica
 tz = pytz.timezone('America/Costa_Rica')
 
-# Lista de sensores simulados
+# --------------------------------------------------------
+# Definición de sensores basados en los topics del fixture
+# --------------------------------------------------------
+# Cada tupla debe tener exactamente 3 valores: (topic, tipo_sensor, unidad)
 SENSORS = [
-    ("temperatura", "Sensor de Temperatura"),
-    ("humedad", "Sensor de Humedad"),
-    ("voltaje", "Sensor de Voltaje"),
-    ("presion", "Sensor de Presión"),
-    ("luminosidad", "Sensor de Luminosidad"),
-    ("ph", "Sensor de pH"),
-    ("co2", "Sensor de CO₂"),
-    ("gas", "Sensor de Gas"),
-    ("proximidad", "Sensor de Proximidad"),
-    ("ambiente", "Tarjeta de Lectura de Sensor Ambiental")
+    ("sensor/temp_int",   "temperatura", "°C"),    # Temperatura Interior
+    ("sensor/temp_ext",   "temperatura", "°C"),    # Temperatura Exterior
+    ("sensor/humedad",    "humedad",     "%"),     # Humedad
+    ("sensor/co2",        "co2",         "ppm"),   # CO2
+    ("sensor/presion",    "presion",     "hPa"),   # Presión
+    ("sensor/luz",        "luz",         "lux"),   # Luminosidad
+    ("sensor/movimiento", "movimiento", ""),      # Movimiento
+    ("sensor/agua",       "agua",        "cm"),    # Nivel de Agua
+    ("sensor/gas",        "gas",         "ppm"),   # Gas
+    ("sensor/sonido",     "sonido",      "dB")     # Sonido
 ]
 
-# Unidades por tipo
-UNITS = {
-    "temperatura": "°C",
-    "humedad": "%",
-    "voltaje": "V",
-    "presion": "Pa",
-    "luminosidad": "lx",
-    "ph": "pH",
-    "co2": "ppm",
-    "gas": "ppm",
-    "proximidad": "cm",
-    "ambiente": "°C"
-}
+# --------------------------------------------------------
+# Función para simular un valor según el tipo de sensor
+# --------------------------------------------------------
+def simulate_sensor_value(sensor_type):
+    """
+    Devuelve un valor simulado según el tipo de sensor.
+    """
+    ranges = {
+        "temperatura":  (20.0, 30.0),
+        "humedad":      (30.0, 80.0),
+        "co2":          (400.0, 1200.0),
+        "presion":      (950.0, 1050.0),   # en hPa
+        "luz":          (100.0, 1000.0),
+        "movimiento":   (0, 1),            # 0 = sin movimiento, 1 = movimiento detectado
+        "agua":         (0.0, 100.0),      # en centímetros de nivel
+        "gas":          (100.0, 300.0),
+        "sonido":       (30.0, 90.0)        # en dB
+    }
+    low, high = ranges.get(sensor_type, (0.0, 100.0))
+    if sensor_type == "movimiento":
+        return random.choice([0, 1])
+    return round(random.uniform(low, high), 2)
 
-# Conexión al broker local
+# --------------------------------------------------------
+# Conexión al broker MQTT local
+# --------------------------------------------------------
 client = mqtt.Client()
 client.connect("localhost", 1883, 60)
 
-def simulate_sensor_value(sensor_type):
-    ranges = {
-        "temperatura": (20, 30),
-        "humedad": (30, 80),
-        "voltaje": (0, 5),
-        "presion": (90000, 110000),
-        "luminosidad": (100, 1000),
-        "ph": (5.5, 7.5),
-        "co2": (400, 1200),
-        "gas": (100, 300),
-        "proximidad": (0, 200),
-        "ambiente": (20, 30)
-    }
-    low, high = ranges.get(sensor_type, (0, 100))
-    return round(random.uniform(low, high), 2)
+# --------------------------------------------------------
+# Bucle principal: cada 2 segundos publica todas las lecturas
+# --------------------------------------------------------
+try:
+    while True:
+        for topic, sensor_type, unit in SENSORS:
+            value = simulate_sensor_value(sensor_type)
+            now_cr = datetime.now(tz)
 
-while True:
-    for sensor_type, sensor_name in SENSORS:
-        topic = f"sensors/{sensor_type}/{sensor_name.replace(' ', '_')}"
-        value = simulate_sensor_value(sensor_type)
-        now_cr = datetime.now(tz)  # 👈 timestamp con hora local
-        payload = {
-            "value": value,
-            "unit": UNITS[sensor_type],
-            "timestamp": now_cr.isoformat()
-        }
-        client.publish(topic, json.dumps(payload))
-        print(f"[MQTT] Sent to {topic}: {payload}")
+            payload = {
+                "value": value,
+                "unit": unit,
+                "timestamp": now_cr.isoformat()
+            }
+            client.publish(topic, json.dumps(payload))
+            print(f"[MQTT] Enviado a {topic}: {payload}")
 
-    time.sleep(2)
+        time.sleep(2)
+
+except KeyboardInterrupt:
+    print("Interrumpido por el usuario, finalizando publicación.")
+    client.disconnect()
