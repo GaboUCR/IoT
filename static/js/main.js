@@ -43,4 +43,43 @@ window.addEventListener("DOMContentLoaded", () => {
     url: "/api/latest-readings/",
     interval: 3000,
   });
+
+  // 6) Botones para eliminar sensores
+  document.querySelectorAll(".delete-sensor-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sensorCard = btn.closest(".sensor-component");
+      const sensorId = sensorCard.dataset.sensorId;
+      fetch(`/api/sensors/${sensorId}/delete/`, { method: "POST" })
+        .then(resp => {
+          if (resp.ok) {
+            sensorCard.remove();
+          } else {
+            alert("Error al eliminar el sensor.");
+          }
+        })
+        .catch(() => {
+          alert("No se pudo conectar al servidor para eliminar el sensor.");
+        });
+    });
+  });
+
+  // 7) Botones para eliminar actuadores
+  document.querySelectorAll(".delete-actuator-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const actuatorCard = btn.closest(".actuator-component");
+      const actuatorId = actuatorCard.dataset.actuatorId;
+      fetch(`/api/actuators/${actuatorId}/delete/`, { method: "POST" })
+        .then(resp => {
+          if (resp.ok) {
+            actuatorCard.remove();
+          } else {
+            alert("Error al eliminar el actuador.");
+          }
+        })
+        .catch(() => {
+          alert("No se pudo conectar al servidor para eliminar el actuador.");
+        });
+    });
+  });
+
 });
