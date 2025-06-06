@@ -52,7 +52,7 @@ export class ActuatorComponent {
         try {
           const res = await fetch("/api/update-actuator/", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Accept-Encoding": "gzip, deflate, br", "Content-Type": "application/json" },
             body: JSON.stringify({
               id: Number(this.id),
               value: !isOn

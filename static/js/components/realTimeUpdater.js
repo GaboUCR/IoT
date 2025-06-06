@@ -9,7 +9,7 @@ export class RealTimeUpdater {
   async fetchLatest() {
     try {
       const resp = await fetch(this.url, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
+        headers: { "Accept-Encoding": "gzip, deflate, br", "X-Requested-With": "XMLHttpRequest" },
         credentials: "same-origin"
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
