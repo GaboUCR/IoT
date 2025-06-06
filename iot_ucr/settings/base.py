@@ -102,12 +102,24 @@ WSGI_APPLICATION = 'iot_ucr.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 100,            # aumenta el timeout a 10s (por defecto son 5s)
+            # no se puede poner journal_mode aquí; hay que hacerlo con PRAGMA en runtime
+        },
     }
 }
+
 
 
 # Password validation
