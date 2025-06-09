@@ -1,0 +1,765 @@
+[
+  {
+    "model": "sensors.sensor",
+    "pk": 1,
+    "fields": { "name": "Temperatura Interior", "sensor_type": "temperatura", "unit": "°C", "topic": "sensor/temp_int" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 2,
+    "fields": { "name": "Temperatura Exterior", "sensor_type": "temperatura", "unit": "°C", "topic": "sensor/temp_ext" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 3,
+    "fields": { "name": "Humedad", "sensor_type": "humedad", "unit": "%", "topic": "sensor/humedad" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 4,
+    "fields": { "name": "CO2", "sensor_type": "co2", "unit": "ppm", "topic": "sensor/co2" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 5,
+    "fields": { "name": "Presión", "sensor_type": "presion", "unit": "hPa", "topic": "sensor/presion" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 6,
+    "fields": { "name": "Luminosidad", "sensor_type": "luz", "unit": "lux", "topic": "sensor/luz" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 7,
+    "fields": { "name": "Movimiento", "sensor_type": "movimiento", "unit": "", "topic": "sensor/movimiento" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 8,
+    "fields": { "name": "Nivel de Agua", "sensor_type": "agua", "unit": "cm", "topic": "sensor/agua" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 9,
+    "fields": { "name": "Gas", "sensor_type": "gas", "unit": "ppm", "topic": "sensor/gas" }
+  },
+  {
+    "model": "sensors.sensor",
+    "pk": 10,
+    "fields": { "name": "Sonido", "sensor_type": "sonido", "unit": "dB", "topic": "sensor/sonido" }
+  },
+
+  {
+    "model": "sensors.actuator",
+    "pk": 101,
+    "fields": { "name": "Ventilador", "actuator_type": "binario", "topic": "actuador/ventilador", "value_boolean": false }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 102,
+    "fields": { "name": "Luz Principal", "actuator_type": "binario", "topic": "actuador/luz_principal", "value_boolean": true }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 103,
+    "fields": { "name": "Bomba de Agua", "actuator_type": "binario", "topic": "actuador/bomba_agua", "value_boolean": false }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 104,
+    "fields": { "name": "Sirena", "actuator_type": "binario", "topic": "actuador/sirena", "value_boolean": false }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 105,
+    "fields": { "name": "Cerradura", "actuator_type": "binario", "topic": "actuador/cerradura", "value_boolean": true }
+  },
+
+  {
+    "model": "sensors.actuator",
+    "pk": 106,
+    "fields": { "name": "Pantalla LCD", "actuator_type": "texto", "topic": "actuador/lcd", "value_text": "Hola Mundo" }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 107,
+    "fields": { "name": "Mensaje Push", "actuator_type": "texto", "topic": "actuador/push", "value_text": "" }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 108,
+    "fields": { "name": "Modo HVAC", "actuator_type": "texto", "topic": "actuador/hvac", "value_text": "Auto" }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 109,
+    "fields": { "name": "Color Luz", "actuator_type": "texto", "topic": "actuador/color", "value_text": "Blanco" }
+  },
+  {
+    "model": "sensors.actuator",
+    "pk": 110,
+    "fields": { "name": "Comando Especial", "actuator_type": "texto", "topic": "actuador/comando", "value_text": "REINICIAR" }
+  },
+
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "test1",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "test2",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "test3",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "username": "test4",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "username": "test5",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+      "username": "test6",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 7,
+    "fields": {
+      "username": "test7",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 8,
+    "fields": {
+      "username": "test8",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 9,
+    "fields": {
+      "username": "test9",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 10,
+    "fields": {
+      "username": "test10",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 11,
+    "fields": {
+      "username": "test11",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 12,
+    "fields": {
+      "username": "test12",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 13,
+    "fields": {
+      "username": "test13",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 14,
+    "fields": {
+      "username": "test14",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 15,
+    "fields": {
+      "username": "test15",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 16,
+    "fields": {
+      "username": "test16",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 17,
+    "fields": {
+      "username": "test17",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 18,
+    "fields": {
+      "username": "test18",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 19,
+    "fields": {
+      "username": "test19",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 20,
+    "fields": {
+      "username": "test20",
+      "password": "pbkdf2_sha256$870000$6ooFifqBJoEQBe1vmJr8el$1zSVVMEHu8PMNUkD0H0WFrBjvh+yV6ZSxKW7lyoXxpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "subscribed_actuators": [
+        101,
+        102,
+        103,
+        104,
+        105
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "subscribed_actuators": [
+        102,
+        103,
+        104,
+        105,
+        106
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "subscribed_actuators": [
+        103,
+        104,
+        105,
+        106,
+        107
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 4,
+    "fields": {
+      "user": 4,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "subscribed_actuators": [
+        104,
+        105,
+        106,
+        107,
+        108
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 5,
+    "fields": {
+      "user": 5,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "subscribed_actuators": [
+        105,
+        106,
+        107,
+        108,
+        109
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 6,
+    "fields": {
+      "user": 6,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "subscribed_actuators": [
+        106,
+        107,
+        108,
+        109,
+        110
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 7,
+    "fields": {
+      "user": 7,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        7,
+        8,
+        9,
+        10,
+        1
+      ],
+      "subscribed_actuators": [
+        107,
+        108,
+        109,
+        110,
+        101
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 8,
+    "fields": {
+      "user": 8,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        8,
+        9,
+        10,
+        1,
+        2
+      ],
+      "subscribed_actuators": [
+        108,
+        109,
+        110,
+        101,
+        102
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 9,
+    "fields": {
+      "user": 9,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        9,
+        10,
+        1,
+        2,
+        3
+      ],
+      "subscribed_actuators": [
+        109,
+        110,
+        101,
+        102,
+        103
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 10,
+    "fields": {
+      "user": 10,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        10,
+        1,
+        2,
+        3,
+        4
+      ],
+      "subscribed_actuators": [
+        110,
+        101,
+        102,
+        103,
+        104
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 11,
+    "fields": {
+      "user": 11,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "subscribed_actuators": [
+        101,
+        102,
+        103,
+        104,
+        105
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 12,
+    "fields": {
+      "user": 12,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "subscribed_actuators": [
+        102,
+        103,
+        104,
+        105,
+        106
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 13,
+    "fields": {
+      "user": 13,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "subscribed_actuators": [
+        103,
+        104,
+        105,
+        106,
+        107
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 14,
+    "fields": {
+      "user": 14,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "subscribed_actuators": [
+        104,
+        105,
+        106,
+        107,
+        108
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 15,
+    "fields": {
+      "user": 15,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "subscribed_actuators": [
+        105,
+        106,
+        107,
+        108,
+        109
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 16,
+    "fields": {
+      "user": 16,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "subscribed_actuators": [
+        106,
+        107,
+        108,
+        109,
+        110
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 17,
+    "fields": {
+      "user": 17,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        7,
+        8,
+        9,
+        10,
+        1
+      ],
+      "subscribed_actuators": [
+        107,
+        108,
+        109,
+        110,
+        101
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 18,
+    "fields": {
+      "user": 18,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        8,
+        9,
+        10,
+        1,
+        2
+      ],
+      "subscribed_actuators": [
+        108,
+        109,
+        110,
+        101,
+        102
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 19,
+    "fields": {
+      "user": 19,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        9,
+        10,
+        1,
+        2,
+        3
+      ],
+      "subscribed_actuators": [
+        109,
+        110,
+        101,
+        102,
+        103
+      ]
+    }
+  },
+  {
+    "model": "accounts.profile",
+    "pk": 20,
+    "fields": {
+      "user": 20,
+      "license": "TEST-1234-XYZ",
+      "subscribed_sensors": [
+        10,
+        1,
+        2,
+        3,
+        4
+      ],
+      "subscribed_actuators": [
+        110,
+        101,
+        102,
+        103,
+        104
+      ]
+    }
+  }
+]

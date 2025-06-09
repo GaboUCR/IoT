@@ -10,20 +10,55 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.utils.dateparse import parse_datetime
 from .forms import SensorForm, ActuatorForm
-import json
+from django.shortcuts import get_object_or_404
 from accounts.models import Profile
+
+import json
+
+
+@require_POST
+@login_required
+@csrf_exempt
+def delete_sensor(request, sensor_id):
+    profile = request.user.profile
+    sensor = get_object_or_404(Sensor, id=sensor_id)
+
+    if sensor not in profile.subscribed_sensors.all():
+        return JsonResponse({"error": "No autorizado para eliminar este sensor."}, status=403)
+
+    profile.subscribed_sensors.remove(sensor)
+
+    sensor.delete()
+
+    return JsonResponse({"success": True})
+
+
+@require_POST
+@login_required
+@csrf_exempt
+def delete_actuator(request, actuator_id):
+    profile = request.user.profile
+    actuator = get_object_or_404(Actuator, id=actuator_id)
+
+    if actuator not in profile.subscribed_actuators.all():
+        return JsonResponse({"error": "No autorizado para eliminar este actuador."}, status=403)
+
+    profile.subscribed_actuators.remove(actuator)
+
+    actuator.delete()
+
+    return JsonResponse({"success": True})
 
 
 @login_required
+@csrf_exempt
 def sensor_create(request):
     if request.method == "POST":
         form = SensorForm(request.POST)
         if form.is_valid():
-            # -> Creamos SIEMPRE un nuevo Sensor, sin comprobar topic
             sensor = form.save(commit=False)
             sensor.save()
 
-            # y lo suscribimos al perfil del usuario
             request.user.profile.subscribed_sensors.add(sensor)
             return redirect("/dashboard/?view=sub")
     else:
@@ -33,6 +68,7 @@ def sensor_create(request):
 
 
 @login_required
+@csrf_exempt
 def actuator_create(request):
     if request.method == "POST":
         form = ActuatorForm(request.POST)
@@ -40,7 +76,6 @@ def actuator_create(request):
             cd = form.cleaned_data
             actuator_type = cd["actuator_type"]
 
-            # Creamos SIEMPRE un nuevo actuador, ya que topic ya no es único
             actuator = Actuator(
                 name=cd["name"],
                 actuator_type=actuator_type,
@@ -50,7 +85,6 @@ def actuator_create(request):
             )
             actuator.save()
 
-            # Suscribimos al usuario al actuador recién creado
             request.user.profile.subscribed_actuators.add(actuator)
 
             return redirect("/dashboard/?view=pub")
@@ -59,7 +93,7 @@ def actuator_create(request):
 
     return render(request, "sensors/actuator_form.html", {"actuator_form": form})
 
-
+@csrf_exempt
 @login_required(login_url='login')
 def dashboard(request):
     profile = request.user.profile
@@ -69,7 +103,7 @@ def dashboard(request):
     sensor_form = SensorForm()
     actuator_form = ActuatorForm()
 
-    view_mode = request.GET.get("view", "sub")  # 👈 AQUÍ
+    view_mode = request.GET.get("view", "sub")
 
     context = {
         "sensors": sensors,
@@ -78,12 +112,12 @@ def dashboard(request):
         "actuator_form": actuator_form,
         "show_sensor_form": request.GET.get("sensor_form") == "1",
         "show_actuator_form": request.GET.get("actuator_form") == "1",
-        "view_mode": view_mode,  # 👈 Y AQUÍ
+        "view_mode": view_mode,
     }
 
     return render(request, "sensors/dashboard.html", context)
 
-
+@csrf_exempt
 @login_required
 def latest_readings(request):
     """
@@ -144,8 +178,7 @@ def latest_readings(request):
         "actuators": actuator_data,
     })
 
-
-
+@csrf_exempt
 @require_GET
 @login_required
 def sensor_readings_range(request):
