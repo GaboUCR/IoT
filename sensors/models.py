@@ -7,7 +7,7 @@ class Sensor(models.Model):
     topic = models.CharField(max_length=128, default="sensor/null", help_text="Tópico MQTT asociado")
 
     store_readings = models.BooleanField(
-        default=False,
+        default=True,
         help_text="Si se desactiva, las lecturas entrantes no se almacenan en BD"
     )
 

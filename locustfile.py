@@ -215,6 +215,30 @@ class StressUser(HttpUser):
         if post.status_code in (301, 302):
             self._refresh_catalog()
 
+    @task(1)
+    def toggle_store_readings(self):
+        if not self.sensor_ids:
+            return
+
+        sid = random.choice(self.sensor_ids)
+        new_store = random.choice([True, False])
+
+        # Obtener el CSRF token de la cookie que Django deja tras el login
+        csrftoken = self.client.cookies.get("csrftoken", "")
+
+        # Incluir el header X-CSRFToken y Referer para que Django lo acepte
+        headers = {
+            "X-CSRFToken": csrftoken,
+            "Referer":    "/dashboard/"  # o la ruta donde tengas tu csrf en plantilla
+        }
+
+        self.client.post(
+            f"/api/sensors/{sid}/store/",
+            json={"store": new_store},
+            headers=headers,
+            name="POST /api/sensors/:id/store/"
+        )
+
     @task
     def maybe_big_sensor_range(self):
         now = time.time()

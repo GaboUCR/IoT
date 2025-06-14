@@ -22,7 +22,8 @@ SENSORS = [
     ("sensor/movimiento", "movimiento", ""),      # Movimiento
     ("sensor/agua",       "agua",        "cm"),    # Nivel de Agua
     ("sensor/gas",        "gas",         "ppm"),   # Gas
-    ("sensor/sonido",     "sonido",      "dB")     # Sonido
+    ("sensor/sonido",     "sonido",      "dB"),     # Sonido
+    ("sensor/temperatura", "temperatura", "°C")
 ]
 
 # --------------------------------------------------------
