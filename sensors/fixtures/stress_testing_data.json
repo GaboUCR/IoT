@@ -1,105 +1,213 @@
 [
-  {
+   {
     "model": "sensors.sensor",
     "pk": 1,
-    "fields": { "name": "Temperatura Interior", "sensor_type": "temperatura", "unit": "°C", "topic": "sensor/temp_int" }
+    "fields": {
+      "name": "Temperatura Interior",
+      "sensor_type": "temperatura",
+      "unit": "°C",
+      "topic": "sensor/temp_int",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 2,
-    "fields": { "name": "Temperatura Exterior", "sensor_type": "temperatura", "unit": "°C", "topic": "sensor/temp_ext" }
+    "fields": {
+      "name": "Temperatura Exterior",
+      "sensor_type": "temperatura",
+      "unit": "°C",
+      "topic": "sensor/temp_ext",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 3,
-    "fields": { "name": "Humedad", "sensor_type": "humedad", "unit": "%", "topic": "sensor/humedad" }
+    "fields": {
+      "name": "Humedad",
+      "sensor_type": "humedad",
+      "unit": "%",
+      "topic": "sensor/humedad",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 4,
-    "fields": { "name": "CO2", "sensor_type": "co2", "unit": "ppm", "topic": "sensor/co2" }
+    "fields": {
+      "name": "CO2",
+      "sensor_type": "co2",
+      "unit": "ppm",
+      "topic": "sensor/co2",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 5,
-    "fields": { "name": "Presión", "sensor_type": "presion", "unit": "hPa", "topic": "sensor/presion" }
+    "fields": {
+      "name": "Presión",
+      "sensor_type": "presion",
+      "unit": "hPa",
+      "topic": "sensor/presion",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 6,
-    "fields": { "name": "Luminosidad", "sensor_type": "luz", "unit": "lux", "topic": "sensor/luz" }
+    "fields": {
+      "name": "Luminosidad",
+      "sensor_type": "luz",
+      "unit": "lux",
+      "topic": "sensor/luz",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 7,
-    "fields": { "name": "Movimiento", "sensor_type": "movimiento", "unit": "", "topic": "sensor/movimiento" }
+    "fields": {
+      "name": "Movimiento",
+      "sensor_type": "movimiento",
+      "unit": "",
+      "topic": "sensor/movimiento",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 8,
-    "fields": { "name": "Nivel de Agua", "sensor_type": "agua", "unit": "cm", "topic": "sensor/agua" }
+    "fields": {
+      "name": "Nivel de Agua",
+      "sensor_type": "agua",
+      "unit": "cm",
+      "topic": "sensor/agua",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 9,
-    "fields": { "name": "Gas", "sensor_type": "gas", "unit": "ppm", "topic": "sensor/gas" }
+    "fields": {
+      "name": "Gas",
+      "sensor_type": "gas",
+      "unit": "ppm",
+      "topic": "sensor/gas",
+      "store_readings": true
+    }
   },
   {
     "model": "sensors.sensor",
     "pk": 10,
-    "fields": { "name": "Sonido", "sensor_type": "sonido", "unit": "dB", "topic": "sensor/sonido" }
+    "fields": {
+      "name": "Sonido",
+      "sensor_type": "sonido",
+      "unit": "dB",
+      "topic": "sensor/sonido",
+      "store_readings": true
+    }
   },
-
   {
     "model": "sensors.actuator",
     "pk": 101,
-    "fields": { "name": "Ventilador", "actuator_type": "binario", "topic": "actuador/ventilador", "value_boolean": false }
+    "fields": {
+      "name": "Ventilador",
+      "actuator_type": "binario",
+      "topic": "actuador/ventilador",
+      "value_boolean": false
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 102,
-    "fields": { "name": "Luz Principal", "actuator_type": "binario", "topic": "actuador/luz_principal", "value_boolean": true }
+    "fields": {
+      "name": "Luz Principal",
+      "actuator_type": "binario",
+      "topic": "actuador/luz_principal",
+      "value_boolean": true
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 103,
-    "fields": { "name": "Bomba de Agua", "actuator_type": "binario", "topic": "actuador/bomba_agua", "value_boolean": false }
+    "fields": {
+      "name": "Bomba de Agua",
+      "actuator_type": "binario",
+      "topic": "actuador/bomba_agua",
+      "value_boolean": false
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 104,
-    "fields": { "name": "Sirena", "actuator_type": "binario", "topic": "actuador/sirena", "value_boolean": false }
+    "fields": {
+      "name": "Sirena",
+      "actuator_type": "binario",
+      "topic": "actuador/sirena",
+      "value_boolean": false
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 105,
-    "fields": { "name": "Cerradura", "actuator_type": "binario", "topic": "actuador/cerradura", "value_boolean": true }
+    "fields": {
+      "name": "Cerradura",
+      "actuator_type": "binario",
+      "topic": "actuador/cerradura",
+      "value_boolean": true
+    }
   },
-
   {
     "model": "sensors.actuator",
     "pk": 106,
-    "fields": { "name": "Pantalla LCD", "actuator_type": "texto", "topic": "actuador/lcd", "value_text": "Hola Mundo" }
+    "fields": {
+      "name": "Pantalla LCD",
+      "actuator_type": "texto",
+      "topic": "actuador/lcd",
+      "value_text": "Hola Mundo"
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 107,
-    "fields": { "name": "Mensaje Push", "actuator_type": "texto", "topic": "actuador/push", "value_text": "" }
+    "fields": {
+      "name": "Mensaje Push",
+      "actuator_type": "texto",
+      "topic": "actuador/push",
+      "value_text": ""
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 108,
-    "fields": { "name": "Modo HVAC", "actuator_type": "texto", "topic": "actuador/hvac", "value_text": "Auto" }
+    "fields": {
+      "name": "Modo HVAC",
+      "actuator_type": "texto",
+      "topic": "actuador/hvac",
+      "value_text": "Auto"
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 109,
-    "fields": { "name": "Color Luz", "actuator_type": "texto", "topic": "actuador/color", "value_text": "Blanco" }
+    "fields": {
+      "name": "Color Luz",
+      "actuator_type": "texto",
+      "topic": "actuador/color",
+      "value_text": "Blanco"
+    }
   },
   {
     "model": "sensors.actuator",
     "pk": 110,
-    "fields": { "name": "Comando Especial", "actuator_type": "texto", "topic": "actuador/comando", "value_text": "REINICIAR" }
+    "fields": {
+      "name": "Comando Especial",
+      "actuator_type": "texto",
+      "topic": "actuador/comando",
+      "value_text": "REINICIAR"
+    }
   },
 
   {

@@ -3,12 +3,16 @@ import { FormModal }             from "./components/formModal.js";
 import { ActuatorComponent }     from "./components/actuatorComponent.js";
 import { toggleDashboardView }   from "./components/toggleDashboardView.js";
 import { RealTimeUpdater }       from "./components/realTimeUpdater.js";
+import {initStoreToggles}        from "./components/storeToggle.js";
 
 window.addEventListener("DOMContentLoaded", () => {
   // 1) Obtener el modo de vista desde la URL
   const urlParams = new URLSearchParams(window.location.search);
   const mode = urlParams.get("view") || "sub";
   toggleDashboardView(mode);
+
+  initStoreToggles();
+
 
   // 2) Instanciar componentes visuales
   document.querySelectorAll(".sensor-component")

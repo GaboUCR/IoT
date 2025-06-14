@@ -17,7 +17,8 @@
       <div id="sensor-{{ sensor.id }}"
            class="sensor-component w-full h-full min-h-[280px] bg-white shadow rounded p-4 flex flex-col justify-between"
            data-sensor-id="{{ sensor.id }}"
-           data-sensor-unit="{{ sensor.unit }}">
+           data-sensor-unit="{{ sensor.unit }}"
+           data-store-enabled="{{ sensor.store_readings|yesno:'1,0' }}">
 
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
           <div class="w-full sm:w-auto text-center">
@@ -61,6 +62,15 @@
         </p>
         <p class="text-xl text-gray-400 timestamp text-center">
           (--)</p>
+
+        <button class="toggle-store-btn w-8 h-8 mt-4 flex items-center self-center justify-center bg-green-500 rounded"
+                title="Activar/Desactivar guardado">
+          <img 
+            src="{% static 'img/loading.png' %}"
+            alt="toggle"
+            class="h-4 w-4 store-icon"
+          >
+        </button>
 
         <div class="sensor-body"></div>
       </div>

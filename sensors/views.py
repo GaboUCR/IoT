@@ -18,6 +18,31 @@ import json
 
 @require_POST
 @login_required
+def set_sensor_store(request, sensor_id):
+    """
+    Activa / desactiva el guardado de lecturas de un sensor.
+    Payload: { "store": true | false }
+    """
+    try:
+        body = json.loads(request.body or "{}")
+        store = body.get("store")
+        if not isinstance(store, bool):
+            return JsonResponse({"error": "Se esperaba un booleano «store»"}, status=400)
+
+        sensor = Sensor.objects.get(id=sensor_id)
+        sensor.store_readings = store
+        sensor.save(update_fields=["store_readings"])
+        return JsonResponse({"success": True,
+                             "id": sensor.id,
+                             "store": sensor.store_readings})
+    except Sensor.DoesNotExist:
+        return JsonResponse({"error": "Sensor no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_POST
+@login_required
 @csrf_exempt
 def delete_sensor(request, sensor_id):
     profile = request.user.profile
@@ -153,6 +178,8 @@ def latest_readings(request):
             "name":      sensor.name,
             "value":     val,
             "timestamp": ts_iso,
+            "store":      sensor.store_readings,   # ← NEW
+
         })
 
     # ————————————————

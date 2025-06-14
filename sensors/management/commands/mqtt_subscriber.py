@@ -65,8 +65,9 @@ class Command(BaseCommand):
             try:
                 close_old_connections()
                 sensor_ids = list(
-                    Sensor.objects.filter(topic=msg.topic)
-                          .values_list("id", flat=True)
+                    Sensor.objects
+                        .filter(topic=msg.topic, store_readings=True)
+                        .values_list("id", flat=True)
                 )
                 if not sensor_ids:
                     return

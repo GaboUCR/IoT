@@ -1,7 +1,7 @@
 # sensores/urls.py
 
 from django.urls import path
-from .views import dashboard, latest_readings, update_actuator, sensor_readings_range, delete_sensor, delete_actuator
+from .views import dashboard, latest_readings, update_actuator, sensor_readings_range, delete_sensor, delete_actuator, set_sensor_store
 from .views import sensor_create, actuator_create
 
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path('actuators/new/', actuator_create, name='actuator_create'),
     path("api/sensors/<int:sensor_id>/delete/", delete_sensor, name="delete_sensor"),
     path("api/actuators/<int:actuator_id>/delete/", delete_actuator, name="delete_actuator"),
+    path("api/sensors/<int:sensor_id>/store/", set_sensor_store, name="set_sensor_store"),
 ]

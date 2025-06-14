@@ -13,14 +13,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms                 import StyledAuthenticationForm, SignUpForm
 
-@method_decorator(csrf_exempt, name='dispatch')
 class HomeView(View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("dashboard")
         return redirect("login")
 
-@method_decorator(csrf_exempt, name='dispatch')
 class CustomLoginView(LoginView):
     template_name = "accounts/auth.html"
     authentication_form = StyledAuthenticationForm
@@ -33,7 +31,6 @@ class CustomLoginView(LoginView):
         ctx.setdefault("active_tab", "login")
         return ctx
 
-@method_decorator(csrf_exempt, name='dispatch')
 class SignUpView(FormView):
     template_name = "accounts/auth.html"
     form_class = SignUpForm
@@ -56,7 +53,6 @@ class SignUpView(FormView):
         ctx.setdefault("active_tab", "login")
         return ctx
 
-@method_decorator(csrf_exempt, name='dispatch')
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy("login")
 
