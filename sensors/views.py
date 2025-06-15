@@ -310,3 +310,41 @@ def update_actuator(request):
         return JsonResponse({"error": "Actuador no encontrado."}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+def send_text_command(request):
+    """
+    Recibe un comando para un actuador de texto y lo persiste
+    directamente en el campo `value_text`.
+    Payload JSON:
+      { "id": <actuator_id>, "message": "<texto>" }
+    """
+    try:
+        data    = json.loads(request.body or "{}")
+        act_id  = data.get("id")
+        message = (data.get("message") or "").strip()
+
+        if not act_id or not message:
+            return JsonResponse({"error": "Faltan id o message"}, status=400)
+
+        # Solo actuadores de tipo 'texto'
+        act = Actuator.objects.get(id=act_id, actuator_type="texto")
+
+        # Escribimos directamente en value_text
+        act.value_text    = message
+        act.value_boolean = None
+        act.save(update_fields=["value_text", "value_boolean"])
+
+        return JsonResponse({
+            "success":   True,
+            "id":        act.id,
+            "value":     act.value_text
+        })
+
+    except Actuator.DoesNotExist:
+        return JsonResponse({"error": "Actuador de texto no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

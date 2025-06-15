@@ -127,6 +127,12 @@ class StressUser(HttpUser):
         self.sensor_ids   = [s["id"] for s in data["sensors"]]
         self.actuator_ids = [a["id"] for a in data["actuators"]]
 
+        # NUEVO: recogemos también sólo los actuadores de texto
+        self.text_actuator_ids = [
+            a["id"] for a in data["actuators"]
+            if a.get("type") == "texto"
+        ]
+
     @task(5)
     def latest_readings(self):
         # agrupado por nombre fijo
@@ -238,6 +244,37 @@ class StressUser(HttpUser):
             headers=headers,
             name="POST /api/sensors/:id/store/"
         )
+
+
+    @task(1)
+    def send_text_command(self):
+        """
+        Invoca al endpoint que recibe mensajes de texto para actuadores.
+        Sólo para actuadores de tipo 'texto'.
+        """
+        if not getattr(self, "text_actuator_ids", []):
+            return
+
+        aid = random.choice(self.text_actuator_ids)
+        msg = f"CMD-{rand_str(5)}"
+
+        # Obtenemos el CSRF token que Django dejó en la cookie al hacer login
+        csrftoken = self.client.cookies.get("csrftoken", "")
+
+        headers = {
+            "X-CSRFToken": csrftoken,
+            "Accept":      "application/json",
+            "Content-Type":"application/json",
+            "Referer":     "/dashboard/"  # la URL desde donde sacaste el CSRF
+        }
+
+        self.client.post(
+            "/api/actuator-text/",           # O la ruta real de tu endpoint
+            json={"id": aid, "message": msg},
+            headers=headers,
+            name="POST /api/actuator-text/"
+        )
+
 
     @task
     def maybe_big_sensor_range(self):

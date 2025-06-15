@@ -27,7 +27,6 @@ class Command(BaseCommand):
 
         # Asociar callbacks
         client.on_connect = self.on_connect
-        client.on_message = self.on_message
 
         # Conectar y arrancar loop en segundo plano
         client.connect("localhost", 1883, 60)
@@ -86,7 +85,12 @@ class Command(BaseCommand):
                     backoff = 0.1
                     for _ in range(max_retries):
                         try:
-                            client.publish(act.topic, json.dumps(payload))
+                            if isinstance(current_value, bool):
+                                client.publish(act.topic, int(current_value))
+
+                            else:
+                                client.publish(act.topic, current_value)
+
                             self.stdout.write(self.style.SUCCESS(
                                 f"[DB→MQTT] Publicado en {act.topic}: {payload}"
                             ))
@@ -108,59 +112,3 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Callback: conectado exitosamente al broker MQTT."))
         else:
             self.stderr.write(f"Callback: error de conexión MQTT, rc={rc}")
-
-    def on_message(self, client, userdata, msg):
-        # Procesa mensajes entrantes para actualizar actuadores en BD
-        try:
-            payload = json.loads(msg.payload.decode("utf-8"))
-            new_value = payload.get("value")
-            if new_value is None:
-                return
-        except Exception:
-            return
-
-        max_retries = 5
-        backoff = 0.1
-        for attempt in range(max_retries):
-            try:
-                close_old_connections()
-                actuators = Actuator.objects.filter(topic=msg.topic)
-                if not actuators.exists():
-                    return
-
-                for act in actuators:
-                    # Convierte y asigna valor
-                    if act.actuator_type == "binario":
-                        valor_bool = (
-                            new_value if isinstance(new_value, bool)
-                            else str(new_value).lower() in ("1","true","on","sí","si")
-                        )
-                        if act.value_boolean == valor_bool:
-                            continue
-                        act.value_boolean = valor_bool
-                        act.value_text = None
-                    else:
-                        valor_str = str(new_value)
-                        if act.value_text == valor_str:
-                            continue
-                        act.value_text = valor_str
-                        act.value_boolean = None
-
-                    act.save()
-                    # Actualiza caché local
-                    self.last_values[act.id] = new_value
-                    self.stdout.write(self.style.SUCCESS(
-                        f"[MQTT→DB] Actuador {act.id} actualizado: {new_value}"
-                    ))
-                break
-
-            except OperationalError as e:
-                if "database is locked" in str(e).lower() and attempt < max_retries - 1:
-                    time.sleep(backoff)
-                    backoff *= 2
-                    continue
-                else:
-                    self.stderr.write(
-                        f"[ERROR] No se pudo actualizar actuadores tras {max_retries} intentos: {e}"
-                    )
-                    return

@@ -93,11 +93,28 @@ export class ActuatorComponent {
       btn.className = "bg-blue-600 text-white px-4 py-2 rounded";
 
       form.append(input, btn);
-      form.addEventListener("submit", (e) => {
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        console.log(`Mock: Enviando "${input.value}" al actuador ${this.id}`);
-        input.value = "";
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        try {
+          const res = await fetch("/api/actuator-text/", {
+            method : "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken" : getCookie("csrftoken"),
+            },
+            body   : JSON.stringify({ id: Number(this.id), message: msg })
+          });
+          if (!res.ok) throw new Error(await res.text());
+          input.value = "";
+        } catch (err) {
+          console.error("Error enviando comando texto:", err);
+        }
       });
+
 
       this.body.className = "flex justify-center";
       this.body.appendChild(form);
@@ -111,5 +128,9 @@ export class ActuatorComponent {
         const src = `${base}img/${tipo}.png`;
         return `<img src="${src}" alt="${tipo}" class="w-8 h-8">`;
       }      
-  }
+}
+
+function getCookie(name) {
+  return (document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"))?.pop() || "";
+}
   
