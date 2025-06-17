@@ -1,0 +1,19 @@
+[Unit]
+Description=Django - Gunicorn web service
+After=network.target
+
+[Service]
+Type=simple
+User=iot
+Group=iot
+WorkingDirectory=/srv/iot_app
+EnvironmentFile=/srv/iot_app/.env
+ExecStart=/srv/iot_app/.venv/bin/gunicorn \
+          --workers 3 \
+          --bind 0.0.0.0:8000 \
+          iot_ucr.wsgi:application
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

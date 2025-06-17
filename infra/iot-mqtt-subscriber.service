@@ -1,0 +1,19 @@
+[Unit]
+Description=MQTT Subscriber - Django management command
+After=network.target iot-web.service
+Requires=iot-web.service
+
+[Service]
+Type=simple
+User=iot
+Group=iot
+WorkingDirectory=/srv/iot_app
+EnvironmentFile=/srv/iot_app/.env
+ExecStart=/srv/iot_app/.venv/bin/python manage.py mqtt_subscriber
+Restart=on-failure            
+RestartSec=3s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

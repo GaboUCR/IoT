@@ -64,12 +64,8 @@ try:
             value = simulate_sensor_value(sensor_type)
             now_cr = datetime.now(tz)
 
-            payload = {
-                "value": value,
-                "unit": unit,
-                "timestamp": now_cr.isoformat()
-            }
-            client.publish(topic, json.dumps(payload))
+            payload = value
+            client.publish(topic, payload)
             print(f"[MQTT] Enviado a {topic}: {payload}")
 
         time.sleep(2)

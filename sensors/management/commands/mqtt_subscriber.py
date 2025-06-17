@@ -2,6 +2,8 @@
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
 import uuid
+import pytz
+from datetime import datetime
 from sensors.models import Sensor, SensorReading
 from django.utils.dateparse import parse_datetime
 from django.db import (
@@ -19,7 +21,7 @@ class Command(BaseCommand):
         close_old_connections()
         with connection.cursor() as c:
             c.execute("PRAGMA journal_mode=WAL;")
-
+            
         # ————— 2) Configurar cliente MQTT con client_id —————
         client_id = f"iot-subscriber-{uuid.uuid4()}"
         client = mqtt.Client(client_id=client_id, clean_session=False)
@@ -87,12 +89,18 @@ class Command(BaseCommand):
     def on_message(self, client, userdata, msg):
         # idéntico a tu lógica actual: parseo, reintentos y filtro store_readings=True
         try:
-            p = json.loads(msg.payload.decode())
-            v = p.get("value")
-            ts = parse_datetime(p.get("timestamp"))
+            v = msg.payload.decode()
+            tz = pytz.timezone("America/Costa_Rica")
+            ts = datetime.now(tz).isoformat()
             if v is None or ts is None:
                 return
-        except Exception:
+
+        except Exception as e:
+            #  ⛔ Klaro y con contexto
+            self.stderr.write(self.style.ERROR(
+                f"[MQTT→DB] Error procesando mensaje "
+                f"topic='{msg.topic}', payload={msg.payload[:80]!r} → {e}"
+            ))
             return
 
         for attempt in range(5):
@@ -115,9 +123,18 @@ class Command(BaseCommand):
                             f"Guardada lectura: Sensor ID={sid}, Valor={v}, Timestamp={ts}"
                         ))  
                     
-                    except IntegrityError:
+                    except IntegrityError as ie:
+                        #  ⚠️  Ya existía una lectura con la misma PK/UNIQUE ó el sensor fue
+                        #  eliminado mientras llegaba el mensaje.
+                        self.stderr.write(self.style.WARNING(
+                            f"[MQTT→DB] IntegrityError – lectura ignorada "
+                            f"(topic='{msg.topic}', sensor_id={sensor.id}) → {ie}"
+                        ))
+                        # no lanzamos la excepción: solo saltamos a la siguiente lectura
                         continue
+                        
                 break
+
             except OperationalError as e:
                 if "database is locked" in str(e).lower() and attempt < 4:
                     time.sleep(0.1 * 2**attempt)

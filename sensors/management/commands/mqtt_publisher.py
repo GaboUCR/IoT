@@ -7,6 +7,7 @@ from datetime import datetime
 import pytz
 import json
 import time
+import uuid
 
 from django.db import connection, close_old_connections, OperationalError
 
@@ -23,10 +24,12 @@ class Command(BaseCommand):
 
         # 2) Preparar zona horaria y cliente MQTT
         tz = pytz.timezone("America/Costa_Rica")
-        client = mqtt.Client()
+        client_id = f"iot-subscriber-{uuid.uuid4()}"
+        client = mqtt.Client(client_id=client_id, clean_session=False)
 
         # Asociar callbacks
         client.on_connect = self.on_connect
+        client.on_disconnect = self.on_disconnect
 
         # Conectar y arrancar loop en segundo plano
         client.connect("localhost", 1883, 60)
@@ -112,3 +115,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Callback: conectado exitosamente al broker MQTT."))
         else:
             self.stderr.write(f"Callback: error de conexión MQTT, rc={rc}")
+
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            self.stderr.write("⚠️ Desconexión inesperada, intentando reconectar…")
