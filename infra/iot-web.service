@@ -8,10 +8,7 @@ User=iot
 Group=iot
 WorkingDirectory=/srv/iot_app
 EnvironmentFile=/srv/iot_app/.env
-ExecStart=/srv/iot_app/.venv/bin/gunicorn \
-          --workers 3 \
-          --bind 0.0.0.0:8000 \
-          iot_ucr.wsgi:application
+ExecStart=/srv/iot_app/.venv/bin/python manage.py runserver
 Restart=on-failure
 RestartSec=5s
 
