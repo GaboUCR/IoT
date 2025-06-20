@@ -4,19 +4,19 @@ After=network.target
 
 [Service]
 Type=simple
-User=iot
-Group=iot
-WorkingDirectory=/home/apps/IoT
+User=webmqtt
+Group=webmqtt
+WorkingDirectory=/home/webmqtt/IoT
 
 # Si quieres usar variables de entorno desde un .env:
-# EnvironmentFile=/home/apps/IoT/.env
+# EnvironmentFile=/home/webmqtt/IoT/.env
 
 # Variables críticas
 Environment=DJANGO_SETTINGS_MODULE=iot_ucr.settings.prod
-Environment=PATH=/home/apps/IoT/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=PATH=/home/webmqtt/IoT/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 
 # Invocamos directamente al binario gunicorn dentro del venv
-ExecStart=/home/apps/IoT/.venv/bin/gunicorn \
+ExecStart=/home/webmqtt/IoT/.venv/bin/gunicorn \
     --workers 3 \
     --threads 2 \
     --bind 0.0.0.0:8000 \

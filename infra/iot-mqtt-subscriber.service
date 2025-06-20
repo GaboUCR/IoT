@@ -5,13 +5,13 @@ Requires=iot-web.service
 
 [Service]
 Type=simple
-User=iot
-Group=iot
-WorkingDirectory=/home/apps/IoT
+User=webmqtt
+Group=webmqtt
+WorkingDirectory=/home/webmqtt/IoT
 Environment=DJANGO_SETTINGS_MODULE=iot_ucr.settings.prod
 
-ExecStart=/home/apps/IoT/.venv/bin/python \
-    /home/apps/IoT/manage.py mqtt_subscriber
+ExecStart=/home/webmqtt/IoT/.venv/bin/python \
+    /home/webmqtt/IoT/manage.py mqtt_subscriber
 
 Restart=on-failure
 RestartSec=3s
