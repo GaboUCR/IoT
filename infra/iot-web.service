@@ -6,9 +6,23 @@ After=network.target
 Type=simple
 User=iot
 Group=iot
-WorkingDirectory=/srv/iot_app
-EnvironmentFile=/srv/iot_app/.env
-ExecStart=/srv/iot_app/.venv/bin/python manage.py runserver
+WorkingDirectory=/home/apps/IoT
+
+# Si quieres usar variables de entorno desde un .env:
+# EnvironmentFile=/home/apps/IoT/.env
+
+# Variables críticas
+Environment=DJANGO_SETTINGS_MODULE=iot_ucr.settings.prod
+Environment=PATH=/home/apps/IoT/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+# Invocamos directamente al binario gunicorn dentro del venv
+ExecStart=/home/apps/IoT/.venv/bin/gunicorn \
+    --workers 3 \
+    --threads 2 \
+    --bind 0.0.0.0:8000 \
+    --access-logfile - \
+    iot_ucr.wsgi:application
+
 Restart=on-failure
 RestartSec=5s
 
