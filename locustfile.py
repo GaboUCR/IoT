@@ -7,6 +7,8 @@ from locust import HttpUser, task, between
 from bs4 import BeautifulSoup
 import itertools
 
+BASE = "https://iotlab201.eie.ucr.ac.cr"
+
 # Lista de topics “oficiales” de sensores en tu sistema
 SENSORS = [
     "sensor/temp_int",
@@ -48,11 +50,13 @@ class StressUser(HttpUser):
         # — LOGIN —
         idx = next(StressUser._user_counter)
         user = f"test{idx}"
-        passwd = "konoha.12"
+        passwd = "contraseña"
+        login_path = "/accounts/login/"
+        login_url = BASE + login_path
 
         # GET form + CSRF
-        login_page = self.client.get("/accounts/login/", name="GET /accounts/login/")
-        soup = BeautifulSoup(login_page.text, "html.parser")
+        resp_page = self.client.get(login_url, name="GET /accounts/login/")
+        soup = BeautifulSoup(resp_page.text, "html.parser")
         token_tag = soup.find("input", {"name": "csrfmiddlewaretoken"})
         csrftoken = token_tag["value"] if token_tag else None
 
@@ -62,10 +66,10 @@ class StressUser(HttpUser):
         if csrftoken:
             payload["csrfmiddlewaretoken"] = csrftoken
             headers["X-CSRFToken"] = csrftoken
-            headers["Referer"] = "/accounts/login/"
+            headers["Referer"] = login_url
 
         resp = self.client.post(
-            "/accounts/login/",
+            login_url,
             data=payload,
             headers=headers,
             allow_redirects=True,
@@ -82,8 +86,9 @@ class StressUser(HttpUser):
         self._refresh_catalog()
 
     def _create_sensor_initial(self):
-        topic = random.choice(SENSORS)
-        r = self.client.get("/sensors/new/", name="GET /sensors/new/")
+        path = "/sensors/new/"
+        url = BASE + path
+        r = self.client.get(url, name="GET /sensors/new/")
         soup = BeautifulSoup(r.text, "html.parser")
         token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
         payload = {
@@ -91,99 +96,71 @@ class StressUser(HttpUser):
             "name": f"StressSensor-{rand_str(4)}",
             "sensor_type": random.choice(["temperatura","humedad","gas"]),
             "unit": random.choice(["°C","%","ppm"]),
-            "topic": topic,
+            "topic": random.choice(SENSORS),
         }
         self.client.post(
-            "/sensors/new/",
+            url,
             data=payload,
-            headers={"X-CSRFToken": token, "Referer": "/sensors/new/"},
+            headers={"X-CSRFToken": token, "Referer": url},
             allow_redirects=False,
             name="POST /sensors/new/"
         )
 
     def _create_actuator_initial(self):
-        topic = random.choice(ACTUATOR_TOPICS)
-        r = self.client.get("/actuators/new/", name="GET /actuators/new/")
+        path = "/actuators/new/"
+        url = BASE + path
+        r = self.client.get(url, name="GET /actuators/new/")
         soup = BeautifulSoup(r.text, "html.parser")
         token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
-        act_type = random.choice(["binario","texto"])
         payload = {
             "csrfmiddlewaretoken": token,
             "name": f"StressActuator-{rand_str(4)}",
-            "actuator_type": act_type,
-            "topic": topic,
+            "actuator_type": random.choice(["binario","texto"]),
+            "topic": random.choice(ACTUATOR_TOPICS),
         }
         self.client.post(
-            "/actuators/new/",
+            url,
             data=payload,
-            headers={"X-CSRFToken": token, "Referer": "/actuators/new/"},
+            headers={"X-CSRFToken": token, "Referer": url},
             allow_redirects=False,
             name="POST /actuators/new/"
         )
 
     def _refresh_catalog(self):
-        r = self.client.get("/api/latest-readings/", name="GET /api/latest-readings/")
+        api_url = BASE + "/api/latest-readings/"
+        r = self.client.get(api_url, name="GET /api/latest-readings/")
         data = r.json()
         self.sensor_ids   = [s["id"] for s in data["sensors"]]
         self.actuator_ids = [a["id"] for a in data["actuators"]]
-
-        # NUEVO: recogemos también sólo los actuadores de texto
-        self.text_actuator_ids = [
-            a["id"] for a in data["actuators"]
-            if a.get("type") == "texto"
-        ]
+        self.text_actuator_ids = [a["id"] for a in data["actuators"] if a.get("type") == "texto"]
 
     @task(5)
     def latest_readings(self):
-        # agrupado por nombre fijo
-        self.client.get("/api/latest-readings/", name="GET /api/latest-readings/")
+        url = BASE + "/api/latest-readings/"
+        self.client.get(url, name="GET /api/latest-readings/")
 
     @task(1)
     def delete_and_subscribe_sensor(self):
-        # DELETE sensor aleatorio
         if not self.sensor_ids:
             return
         sid = random.choice(self.sensor_ids)
-        resp = self.client.post(
-            f"/api/sensors/{sid}/delete/",
+        self.client.post(
+            BASE + f"/api/sensors/{sid}/delete/",
             name="POST /api/sensors/:id/delete/"
         )
-        if resp.status_code == 200:
-            self.sensor_ids.remove(sid)
-
-        # POST nuevo sensor
-        topic = random.choice(SENSORS)
-        r = self.client.get("/sensors/new/", name="GET /sensors/new/")
-        soup = BeautifulSoup(r.text, "html.parser")
-        token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
-        payload = {
-            "csrfmiddlewaretoken": token,
-            "name": f"Stress-{rand_str(4)}",
-            "sensor_type": random.choice(["temperatura","humedad","gas"]),
-            "unit": random.choice(["°C","%","ppm"]),
-            "topic": topic,
-        }
-        post = self.client.post(
-            "/sensors/new/",
-            data=payload,
-            headers={"X-CSRFToken": token, "Referer": "/sensors/new/"},
-            allow_redirects=False,
-            name="POST /sensors/new/"
-        )
-        if post.status_code in (301, 302):
-            self._refresh_catalog()
+        self.sensor_ids.remove(sid)
+        # Crear nuevo sensor
+        self._create_sensor_initial()
+        self._refresh_catalog()
 
     @task(2)
     def update_actuator(self):
         if not self.actuator_ids:
             return
         aid = random.choice(self.actuator_ids)
-        if random.random() < 0.5:
-            val = random.choice([True, False])
-        else:
-            val = f"MSG-{rand_str(3)}"
+        val = random.choice([True, False, f"MSG-{rand_str(3)}"])
         self.client.post(
-            "/api/update-actuator/",
+            BASE + "/api/update-actuator/",
             json={"id": aid, "value": val},
             name="POST /api/update-actuator/"
         )
@@ -193,88 +170,47 @@ class StressUser(HttpUser):
         if not self.actuator_ids:
             return
         aid = random.choice(self.actuator_ids)
-        resp = self.client.post(
-            f"/api/actuators/{aid}/delete/",
+        self.client.post(
+            BASE + f"/api/actuators/{aid}/delete/",
             name="POST /api/actuators/:id/delete/"
         )
-        if resp.status_code == 200:
-            self.actuator_ids.remove(aid)
-
-        topic = random.choice(ACTUATOR_TOPICS)
-        r = self.client.get("/actuators/new/", name="GET /actuators/new/")
-        soup = BeautifulSoup(r.text, "html.parser")
-        token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
-        act_type = random.choice(["binario","texto"])
-        payload = {
-            "csrfmiddlewaretoken": token,
-            "name": f"ActuatorStress-{rand_str(4)}",
-            "actuator_type": act_type,
-            "topic": topic,
-        }
-        post = self.client.post(
-            "/actuators/new/",
-            data=payload,
-            headers={"X-CSRFToken": token, "Referer": "/actuators/new/"},
-            allow_redirects=False,
-            name="POST /actuators/new/"
-        )
-        if post.status_code in (301, 302):
-            self._refresh_catalog()
+        self.actuator_ids.remove(aid)
+        self._create_actuator_initial()
+        self._refresh_catalog()
 
     @task(1)
     def toggle_store_readings(self):
         if not self.sensor_ids:
             return
-
         sid = random.choice(self.sensor_ids)
         new_store = random.choice([True, False])
-
-        # Obtener el CSRF token de la cookie que Django deja tras el login
+        path = f"/api/sensors/{sid}/store/"
+        url = BASE + path
         csrftoken = self.client.cookies.get("csrftoken", "")
-
-        # Incluir el header X-CSRFToken y Referer para que Django lo acepte
-        headers = {
-            "X-CSRFToken": csrftoken,
-            "Referer":    "/dashboard/"  # o la ruta donde tengas tu csrf en plantilla
-        }
-
+        headers = {"X-CSRFToken": csrftoken, "Referer": BASE + "/dashboard/"}
         self.client.post(
-            f"/api/sensors/{sid}/store/",
+            url,
             json={"store": new_store},
             headers=headers,
             name="POST /api/sensors/:id/store/"
         )
 
-
     @task(1)
     def send_text_command(self):
-        """
-        Invoca al endpoint que recibe mensajes de texto para actuadores.
-        Sólo para actuadores de tipo 'texto'.
-        """
         if not getattr(self, "text_actuator_ids", []):
             return
-
         aid = random.choice(self.text_actuator_ids)
         msg = f"CMD-{rand_str(5)}"
-
-        # Obtenemos el CSRF token que Django dejó en la cookie al hacer login
+        path = "/api/actuator-text/"
+        url = BASE + path
         csrftoken = self.client.cookies.get("csrftoken", "")
-
-        headers = {
-            "X-CSRFToken": csrftoken,
-            "Accept":      "application/json",
-            "Content-Type":"application/json",
-            "Referer":     "/dashboard/"  # la URL desde donde sacaste el CSRF
-        }
-
+        headers = {"X-CSRFToken": csrftoken, "Accept": "application/json", "Content-Type": "application/json", "Referer": BASE + "/dashboard/"}
         self.client.post(
-            "/api/actuator-text/",           # O la ruta real de tu endpoint
+            url,
             json={"id": aid, "message": msg},
             headers=headers,
             name="POST /api/actuator-text/"
         )
-
 
     @task
     def maybe_big_sensor_range(self):
@@ -287,13 +223,9 @@ class StressUser(HttpUser):
         sid = random.choice(self.sensor_ids)
         to_dt = dt.datetime.utcnow()
         from_dt = to_dt - dt.timedelta(days=7)
+        params = {"sensor_id": sid, "from": from_dt.isoformat(), "to": to_dt.isoformat(), "buckets": 1000}
         self.client.get(
-            "/api/sensor-readings/",
-            params={
-                "sensor_id": sid,
-                "from": from_dt.isoformat(),
-                "to":   to_dt.isoformat(),
-                "buckets": 1000
-            },
+            BASE + "/api/sensor-readings/",
+            params=params,
             name="GET /api/sensor-readings/"
         )

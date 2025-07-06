@@ -11,6 +11,11 @@ from django.db import (
     OperationalError, IntegrityError,
 )
 import json, time
+import sys
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Command(BaseCommand):
@@ -24,7 +29,13 @@ class Command(BaseCommand):
             
         # ————— 2) Configurar cliente MQTT con client_id —————
         client_id = f"iot-subscriber-{uuid.uuid4()}"
-        client = mqtt.Client(client_id=client_id, clean_session=True)
+        client = mqtt.Client(client_id=client_id, clean_session=False)
+        # ————— Autenticación MQTT desde .env —————
+        client.username_pw_set(
+            os.getenv("MQTT_USER"),
+            os.getenv("MQTT_PASSWORD")
+        )
+
         client.on_connect    = self.on_connect
         client.on_disconnect = self.on_disconnect
         client.on_message    = self.on_message
@@ -41,7 +52,7 @@ class Command(BaseCommand):
         next_refresh = time.time()
 
         try:
-            # 4) Bucle principal: mezcla red + refresher
+            # 4) Bucle principal: mezcla red  refresher
             while True:
                 # ——— 4.1) Procesa mensajes MQTT hasta 1 s ———
                 client.loop(timeout=1.0)
@@ -81,10 +92,12 @@ class Command(BaseCommand):
                 client.subscribe(t)
         else:
             self.stderr.write(f"❌ MQTT rc={rc}")
+            sys.exit(1)
+
 
     def on_disconnect(self, client, userdata, rc):
-        if rc != 0:
-            self.stderr.write("⚠️ Desconexión inesperada, intentando reconectar…")
+        self.stderr.write("⚠️ Desconexión inesperada, reiniciando servicio…")
+        sys.exit(1)
 
     def on_message(self, client, userdata, msg):
         # idéntico a tu lógica actual: parseo, reintentos y filtro store_readings=True

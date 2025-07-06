@@ -4,6 +4,11 @@ import json
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import pytz  
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Zona horaria de Costa Rica
 tz = pytz.timezone('America/Costa_Rica')
@@ -53,6 +58,12 @@ def simulate_sensor_value(sensor_type):
 # Conexión al broker MQTT local
 # --------------------------------------------------------
 client = mqtt.Client()
+# ————— Autenticación MQTT desde .env —————
+client.username_pw_set(
+    os.getenv("MQTT_USER"),
+    os.getenv("MQTT_PASSWORD")
+)
+
 client.connect("localhost", 1883, 60)
 
 # --------------------------------------------------------
