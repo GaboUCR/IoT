@@ -24,7 +24,7 @@ class Command(BaseCommand):
             
         # ————— 2) Configurar cliente MQTT con client_id —————
         client_id = f"iot-subscriber-{uuid.uuid4()}"
-        client = mqtt.Client(client_id=client_id, clean_session=False)
+        client = mqtt.Client(client_id=client_id, clean_session=True)
         client.on_connect    = self.on_connect
         client.on_disconnect = self.on_disconnect
         client.on_message    = self.on_message
