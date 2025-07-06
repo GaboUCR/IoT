@@ -1,0 +1,19 @@
+# recargar configuración
+sudo systemctl daemon-reload
+
+# habilitar (arranque automático)
+sudo systemctl enable iot-web.service
+sudo systemctl enable iot-mqtt-subscriber.service
+sudo systemctl enable iot-mqtt-publisher.service
+# o bien:
+# sudo systemctl enable iot-suite.target
+
+# lanzar
+sudo systemctl start iot-web
+sudo systemctl start iot-mqtt-subscriber
+sudo systemctl start iot-mqtt-publisher
+
+
+journalctl -u iot-web -f
+journalctl -u iot-mqtt-subscriber -f
+journalctl -u iot-mqtt-publisher -f

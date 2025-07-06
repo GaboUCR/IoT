@@ -1,61 +1,156 @@
 # sensors/management/commands/mqtt_subscriber.py
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
+import uuid
+import pytz
+from datetime import datetime
 from sensors.models import Sensor, SensorReading
 from django.utils.dateparse import parse_datetime
-import json
+from django.db import (
+    connection, close_old_connections,
+    OperationalError, IntegrityError,
+)
+import json, time
+import sys
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Command(BaseCommand):
-    help = "Suscribe a MQTT y persiste lecturas en BD"
+    help = "Escucha MQTT y persiste lecturas (solo store_readings=True)."
 
-    def handle(self, *args, **options):
-        # Configurar cliente MQTT
-        client = mqtt.Client()
-        client.on_connect = self.on_connect
-        client.on_message = self.on_message
+    def handle(self, *args, **opts):
+        # 1) Activa WAL
+        close_old_connections()
+        with connection.cursor() as c:
+            c.execute("PRAGMA journal_mode=WAL;")
+            
+        # ————— 2) Configurar cliente MQTT con client_id —————
+        client_id = f"iot-subscriber-{uuid.uuid4()}"
+        client = mqtt.Client(client_id=client_id, clean_session=False)
+        # ————— Autenticación MQTT desde .env —————
+        client.username_pw_set(
+            os.getenv("MQTT_USER"),
+            os.getenv("MQTT_PASSWORD")
+        )
 
-        # Conectar al broker local
-        client.connect("localhost", 1883, 60)
-        self.stdout.write(self.style.SUCCESS("Conectado a MQTT broker en localhost:1883"))
+        client.on_connect    = self.on_connect
+        client.on_disconnect = self.on_disconnect
+        client.on_message    = self.on_message
 
-        # Loop infinito para recibir mensajes
+        # ————— 3) Conectar al broker local —————
+        client.connect("localhost", 1883, keepalive=60)
+        self.stdout.write(self.style.SUCCESS(
+            f"Conectado a MQTT broker en localhost:1883 con client_id={client_id}"
+        ))
+
+        # 3) Variables de suscripción
+        self.subscribed = set()
+        refresh_interval = 1.0  # segundos
+        next_refresh = time.time()
+
         try:
-            client.loop_forever()
+            # 4) Bucle principal: mezcla red  refresher
+            while True:
+                # ——— 4.1) Procesa mensajes MQTT hasta 1 s ———
+                client.loop(timeout=1.0)
+
+                # ——— 4.2) Cada refresh_interval s, ajusta suscripciones ———
+                now = time.time()
+                if now >= next_refresh:
+                    next_refresh = now + refresh_interval
+                    self._refresh_subscriptions(client)
         except KeyboardInterrupt:
+            self.stdout.write(self.style.WARNING("👋 Interrumpido, desconectando…"))
             client.disconnect()
-            self.stdout.write(self.style.WARNING("Desconectado del broker MQTT"))
+
+    def _refresh_subscriptions(self, client):
+        """Comprueba los topics en BD y subscribe/unsubscribe según cambios."""
+
+        close_old_connections()
+        current = set(
+            Sensor.objects.values_list("topic", flat=True).distinct()
+        )
+        # nuevos →
+        for t in current - self.subscribed:
+            client.subscribe(t)
+            self.subscribed.add(t)
+            self.stdout.write(self.style.SUCCESS(f"🟢 Subscribed → {t}"))
+        # eliminados →
+        for t in self.subscribed - current:
+            client.unsubscribe(t)
+            self.subscribed.remove(t)
+            self.stdout.write(self.style.WARNING(f"⚪️ Unsubscribed ← {t}"))
 
     def on_connect(self, client, userdata, flags, rc):
-        """Callback al conectar exitosamente al broker"""
-        self.stdout.write(self.style.SUCCESS(f"Suscrito a topics: ['sensors/#'] (rc={rc})"))
-        client.subscribe("sensors/#")
+        if rc == 0:
+            self.stdout.write(self.style.SUCCESS("✅ MQTT conectado OK"))
+            # re-suscribirse por si hace falta
+            for t in self.subscribed:
+                client.subscribe(t)
+        else:
+            self.stderr.write(f"❌ MQTT rc={rc}")
+            sys.exit(1)
+
+
+    def on_disconnect(self, client, userdata, rc):
+        self.stderr.write("⚠️ Desconexión inesperada, reiniciando servicio…")
+        sys.exit(1)
 
     def on_message(self, client, userdata, msg):
-        """Callback al recibir mensaje MQTT"""
+        # idéntico a tu lógica actual: parseo, reintentos y filtro store_readings=True
         try:
-            data = json.loads(msg.payload)
-            value = data.get("value")
-            timestamp_str = data.get("timestamp")
-            ts = parse_datetime(timestamp_str)
+            v = msg.payload.decode()
+            tz = pytz.timezone("America/Costa_Rica")
+            ts = datetime.now(tz).isoformat()
+            if v is None or ts is None:
+                return
 
-            # Extraer tipo y nombre del topic: sensors/<tipo>/<nombre>
-            _, sensor_type, raw_name = msg.topic.split("/", 2)
-            name = raw_name.replace("_", " ")
-
-            # Buscar el sensor en la base de datos
-            sensor = Sensor.objects.get(sensor_type=sensor_type, name=name)
-
-            # Crear lectura y persistir
-            reading = SensorReading.objects.create(
-                sensor=sensor,
-                value=value,
-                timestamp=ts
-            )
-
-            self.stdout.write(self.style.SUCCESS(
-                f"Guardada lectura: Sensor ID={sensor.id}, Valor={value}, Timestamp={ts}"
-            ))
-        except Sensor.DoesNotExist:
-            self.stderr.write(f"Sensor no encontrado para topic {msg.topic}")
         except Exception as e:
-            self.stderr.write(f"Error procesando {msg.topic}: {e}")
+            #  ⛔ Klaro y con contexto
+            self.stderr.write(self.style.ERROR(
+                f"[MQTT→DB] Error procesando mensaje "
+                f"topic='{msg.topic}', payload={msg.payload[:80]!r} → {e}"
+            ))
+            return
+
+        for attempt in range(5):
+            try:
+                close_old_connections()
+                ids = (
+                    Sensor.objects
+                          .filter(topic=msg.topic, store_readings=True)
+                          .values_list("id", flat=True)
+                )
+                if not ids:
+                    return
+                for sid in ids:
+                    try:
+                        SensorReading.objects.create(
+                            sensor_id=sid, value=v, timestamp=ts
+                        )
+
+                        self.stdout.write(self.style.SUCCESS(
+                            f"Guardada lectura: Sensor ID={sid}, Valor={v}, Timestamp={ts}"
+                        ))  
+                    
+                    except IntegrityError as ie:
+                        #  ⚠️  Ya existía una lectura con la misma PK/UNIQUE ó el sensor fue
+                        #  eliminado mientras llegaba el mensaje.
+                        self.stderr.write(self.style.WARNING(
+                            f"[MQTT→DB] IntegrityError – lectura ignorada "
+                            f"(topic='{msg.topic}', sensor_id={sensor.id}) → {ie}"
+                        ))
+                        # no lanzamos la excepción: solo saltamos a la siguiente lectura
+                        continue
+                        
+                break
+
+            except OperationalError as e:
+                if "database is locked" in str(e).lower() and attempt < 4:
+                    time.sleep(0.1 * 2**attempt)
+                else:
+                    self.stderr.write(f"[ERROR] {e}")
+                    return

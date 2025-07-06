@@ -5,49 +5,42 @@ from django.views           import View
 from django.views.generic   import FormView
 from django.contrib.auth    import login
 from django.contrib.auth.views import LoginView, LogoutView
+from django.views.decorators.csrf import csrf_exempt  
+
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
 from .forms                 import StyledAuthenticationForm, SignUpForm
 
 class HomeView(View):
-    """
-    /
-    Si el usuario ya está logueado → dashboard,
-    si no, → /login/
-    """
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("dashboard")
         return redirect("login")
 
-
 class CustomLoginView(LoginView):
-    """
-    /login/
-    Usa StyledAuthenticationForm y envía también un SignUpForm vacío
-    para que auth.html pueda renderizar ambos formularios.
-    """
-    template_name         = "accounts/auth.html"
-    authentication_form   = StyledAuthenticationForm
-    redirect_authenticated_user = True  # evita volver al login si ya está dentro
+    template_name = "accounts/auth.html"
+    authentication_form = StyledAuthenticationForm
+    redirect_authenticated_user = True
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form_login"]  = ctx.pop("form")
+        ctx["form_login"] = ctx.pop("form")
         ctx["form_signup"] = SignUpForm()
         ctx.setdefault("active_tab", "login")
-
         return ctx
-
 
 class SignUpView(FormView):
     template_name = "accounts/auth.html"
-    form_class    = SignUpForm
-    success_url   = reverse_lazy("dashboard")
+    form_class = SignUpForm
+    success_url = reverse_lazy("dashboard")
 
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         ctx = self.get_context_data(form=form)
         ctx["active_tab"] = "signup"
@@ -56,13 +49,10 @@ class SignUpView(FormView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["form_signup"] = ctx.pop("form")
-        ctx["form_login"]  = StyledAuthenticationForm()
+        ctx["form_login"] = StyledAuthenticationForm()
         ctx.setdefault("active_tab", "login")
         return ctx
 
 class CustomLogoutView(LogoutView):
-    """
-    /logout/
-    Solo cierra sesión y redirige al login.
-    """
     next_page = reverse_lazy("login")
+

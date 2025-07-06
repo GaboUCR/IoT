@@ -1,0 +1,43 @@
+  {% load static %}
+  
+  <header class="bg-white shadow p-4 mb-6">
+    <div class="container mx-auto flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">IoT UCR</h1>
+
+      <!-- Contenedor de botones del header -->
+      <div class="flex items-center gap-4">
+        
+      <!-- Botón para formulario "Agregar sensor" -->
+      <a href="{% url 'sensor_create' %}"
+        class="w-8 h-8 flex items-center justify-center">
+        <img src="{% static 'img/add.png' %}" alt="Agregar" class="h-8 w-8" title="Agregar sensor">
+      </a>
+
+      <a href="{% url 'actuator_create' %}"
+        class="w-8 h-8 flex items-center justify-center" title="Agregar actuador">
+        <img src="{% static 'img/add_actuator.png' %}" alt="+" class="h-8 w-8">
+      </a>
+
+        <button id="toggle-pub-sub" class="w-8 h-8 flex items-center justify-center" title="Cambiar modo pub/sub">
+        <img id="pub-sub-icon"
+            src="{% static 'img/pub.png' %}"
+            alt="toggle"
+            class="h-6 w-6 icon-toggle">
+        </button>
+
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button id="logout-button" class="w-8 h-8 flex items-center justify-center">
+  
+            <img id="logout-icon"
+                src="{% static 'img/logout.png' %}"
+                alt="sub"
+                class="h-6 w-6  icon-toggle"
+                title="button to logout">
+          </button>
+        </form>
+        
+
+      </div>
+    </div>
+  </header>

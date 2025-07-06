@@ -1,0 +1,41 @@
+<!-- templates/sensors/actuator_form.html -->
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Registrar Actuador{% endblock %}
+
+{% block header %}
+
+{% include "navbar.html" %}
+
+{% endblock %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-12 flex justify-center">
+    <div class="bg-white border shadow-lg rounded-xl p-8 w-full max-w-lg">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Registrar nuevo actuador</h2>
+      <form method="post" action="{% url 'actuator_create' %}" class="space-y-5">
+        {% csrf_token %}
+        <div>
+          {{ actuator_form.name.label_tag }}
+          {{ actuator_form.name|add_class:"w-full p-2 border rounded-lg" }}
+          {{ actuator_form.name.errors }}
+        </div>
+        <div>
+          {{ actuator_form.actuator_type.label_tag }}
+          {{ actuator_form.actuator_type|add_class:"w-full p-2 border rounded-lg" }}
+          {{ actuator_form.actuator_type.errors }}
+        </div>
+        <div>
+          {{ actuator_form.topic.label_tag }}
+          {{ actuator_form.topic|add_class:"w-full p-2 border rounded-lg" }}
+          {{ actuator_form.topic.errors }}
+        </div>
+        <button type="submit"
+                class="w-full bg-green-600 text-white py-2.5 rounded-lg text-lg font-medium hover:bg-green-700 transition">
+          Crear Actuador
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

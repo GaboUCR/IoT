@@ -1,6 +1,6 @@
 # sensors/views/dashboard.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from sensors.models import Sensor, SensorReading, Actuator
 from django.http       import JsonResponse
@@ -9,32 +9,162 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt  
 from django.views.decorators.http import require_GET
 from django.utils.dateparse import parse_datetime
+from .forms import SensorForm, ActuatorForm
+from django.shortcuts import get_object_or_404
+from accounts.models import Profile
 
 import json
 
 
-@login_required(login_url='login')
-def dashboard(request):
-    # Consultar todos los sensores y actuadores
-    sensors = Sensor.objects.all()
-    actuators = Actuator.objects.all()
+@require_POST
+@login_required
+def set_sensor_store(request, sensor_id):
+    """
+    Activa / desactiva el guardado de lecturas de un sensor.
+    Payload: { "store": true | false }
+    """
+    try:
+        body = json.loads(request.body or "{}")
+        store = body.get("store")
+        if not isinstance(store, bool):
+            return JsonResponse({"error": "Se esperaba un booleano «store»"}, status=400)
 
-    return render(request, "sensors/dashboard.html", {
-        "sensors": sensors,
-        "actuators": actuators
-    })
+        sensor = Sensor.objects.get(id=sensor_id)
+        sensor.store_readings = store
+        sensor.save(update_fields=["store_readings"])
+        return JsonResponse({"success": True,
+                             "id": sensor.id,
+                             "store": sensor.store_readings})
+    except Sensor.DoesNotExist:
+        return JsonResponse({"error": "Sensor no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@require_POST
+@login_required
+@csrf_exempt
+def delete_sensor(request, sensor_id):
+    profile = request.user.profile
+    sensor = get_object_or_404(Sensor, id=sensor_id)
+
+    if sensor not in profile.subscribed_sensors.all():
+        return JsonResponse({"error": "No autorizado para eliminar este sensor."}, status=403)
+
+    profile.subscribed_sensors.remove(sensor)
+
+    sensor.delete()
+
+    return JsonResponse({"success": True})
+
+
+@require_POST
+@login_required
+@csrf_exempt
+def delete_actuator(request, actuator_id):
+    profile = request.user.profile
+    actuator = get_object_or_404(Actuator, id=actuator_id)
+
+    if actuator not in profile.subscribed_actuators.all():
+        return JsonResponse({"error": "No autorizado para eliminar este actuador."}, status=403)
+
+    profile.subscribed_actuators.remove(actuator)
+
+    actuator.delete()
+
+    return JsonResponse({"success": True})
 
 
 @login_required
+@csrf_exempt
+def sensor_create(request):
+    if request.method == "POST":
+        form = SensorForm(request.POST)
+        if form.is_valid():
+            sensor = form.save(commit=False)
+            sensor.save()
+
+            request.user.profile.subscribed_sensors.add(sensor)
+            return redirect("/dashboard/?view=sub")
+    else:
+        form = SensorForm()
+
+    return render(request, "sensors/sensor_form.html", {"sensor_form": form})
+
+
+@login_required
+@csrf_exempt
+def actuator_create(request):
+    if request.method == "POST":
+        form = ActuatorForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            actuator_type = cd["actuator_type"]
+
+            actuator = Actuator(
+                name=cd["name"],
+                actuator_type=actuator_type,
+                topic=cd["topic"],
+                value_boolean=True if actuator_type == "binario" else None,
+                value_text="ON" if actuator_type == "texto" else None
+            )
+            actuator.save()
+
+            request.user.profile.subscribed_actuators.add(actuator)
+
+            return redirect("/dashboard/?view=pub")
+    else:
+        form = ActuatorForm()
+
+    return render(request, "sensors/actuator_form.html", {"actuator_form": form})
+
+@csrf_exempt
+@login_required(login_url='login')
+def dashboard(request):
+    profile = request.user.profile
+    sensors = profile.subscribed_sensors.all()
+    actuators = profile.subscribed_actuators.all()
+
+    sensor_form = SensorForm()
+    actuator_form = ActuatorForm()
+
+    view_mode = request.GET.get("view", "sub")
+
+    context = {
+        "sensors": sensors,
+        "actuators": actuators,
+        "sensor_form": sensor_form,
+        "actuator_form": actuator_form,
+        "show_sensor_form": request.GET.get("sensor_form") == "1",
+        "show_actuator_form": request.GET.get("actuator_form") == "1",
+        "view_mode": view_mode,
+    }
+
+    return render(request, "sensors/dashboard.html", context)
+
+@csrf_exempt
+@login_required
 def latest_readings(request):
     """
-    Devuelve:
-    - Última lectura de cada sensor (timestamp en zona local)
-    - Valor actual de cada actuador
+    Devuelve únicamente:
+    - Última lectura de cada sensor al que el usuario está suscrito.
+    - Valor actual de cada actuador al que el usuario está suscrito.
     """
+    user = request.user
+
+    # Intentamos obtener el profile asociado; si no existiera, devolvemos listas vacías.
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        return JsonResponse({"sensors": [], "actuators": []})
+
+    # ————————————————
+    # Lecturas de Sensores
+    # ————————————————
     sensor_data = []
-    for sensor in Sensor.objects.all():
-        last = sensor.readings.first()
+    # Recorremos solo los sensores suscritos
+    for sensor in profile.subscribed_sensors.all():
+        last = sensor.readings.first()  # readings está ordenado por "-timestamp"
         if last:
             local_ts = timezone.localtime(last.timestamp)
             ts_iso   = local_ts.isoformat()
@@ -48,11 +178,16 @@ def latest_readings(request):
             "name":      sensor.name,
             "value":     val,
             "timestamp": ts_iso,
+            "store":      sensor.store_readings,   # ← NEW
+
         })
 
+    # ————————————————
+    # Valores de Actuadores
+    # ————————————————
     actuator_data = []
-    for actuator in Actuator.objects.all():
-        # Selecciona el campo correcto según el tipo
+    # Recorremos solo los actuadores suscritos
+    for actuator in profile.subscribed_actuators.all():
         if actuator.actuator_type == "texto":
             act_val = actuator.value_text
         else:
@@ -70,7 +205,7 @@ def latest_readings(request):
         "actuators": actuator_data,
     })
 
-
+@csrf_exempt
 @require_GET
 @login_required
 def sensor_readings_range(request):
@@ -173,5 +308,43 @@ def update_actuator(request):
 
     except Actuator.DoesNotExist:
         return JsonResponse({"error": "Actuador no encontrado."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+def send_text_command(request):
+    """
+    Recibe un comando para un actuador de texto y lo persiste
+    directamente en el campo `value_text`.
+    Payload JSON:
+      { "id": <actuator_id>, "message": "<texto>" }
+    """
+    try:
+        data    = json.loads(request.body or "{}")
+        act_id  = data.get("id")
+        message = (data.get("message") or "").strip()
+
+        if not act_id or not message:
+            return JsonResponse({"error": "Faltan id o message"}, status=400)
+
+        # Solo actuadores de tipo 'texto'
+        act = Actuator.objects.get(id=act_id, actuator_type="texto")
+
+        # Escribimos directamente en value_text
+        act.value_text    = message
+        act.value_boolean = None
+        act.save(update_fields=["value_text", "value_boolean"])
+
+        return JsonResponse({
+            "success":   True,
+            "id":        act.id,
+            "value":     act.value_text
+        })
+
+    except Actuator.DoesNotExist:
+        return JsonResponse({"error": "Actuador de texto no encontrado"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

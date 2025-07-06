@@ -1,9 +1,11 @@
 .venv
 db.sqlite3
-.env
 __pycache__
 todo.txt
 notes
 get_files.py
+exports
+staticfiles
 db.sqlite3-journal
-locustfile.py
+db.sqlite3-shm
+db.sqlite3-wal

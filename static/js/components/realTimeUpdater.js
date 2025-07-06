@@ -9,7 +9,7 @@ export class RealTimeUpdater {
   async fetchLatest() {
     try {
       const resp = await fetch(this.url, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
+        headers: { "Accept-Encoding": "gzip, deflate, br", "X-Requested-With": "XMLHttpRequest" },
         credentials: "same-origin"
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -35,6 +35,15 @@ export class RealTimeUpdater {
       if (tsEl) tsEl.textContent = timestamp
         ? new Date(timestamp).toLocaleTimeString()
         : "";
+
+          // 2) NEW: flip your “store” icon
+      const storeImg = container.querySelector(".store-icon img");
+      if (storeImg) {
+        const base = window.STATIC_URL || "/static/";
+        storeImg.src = store
+          ? `${base}img/check.png`
+          : `${base}img/x.png`;
+      }
     });
 
     // Actualizar actuadores

@@ -1,0 +1,22 @@
+[Unit]
+Description=MQTT Publisher – Django management command
+After=network.target iot-web.service
+Requires=iot-web.service
+
+[Service]
+Type=simple
+User=webmqtt
+Group=webmqtt
+WorkingDirectory=/home/webmqtt/IoT
+Environment=DJANGO_SETTINGS_MODULE=iot_ucr.settings.prod
+
+ExecStart=/home/webmqtt/IoT/.venv/bin/python \
+    /home/webmqtt/IoT/manage.py mqtt_publisher
+
+Restart=on-failure
+RestartSec=3s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
